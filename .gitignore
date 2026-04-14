@@ -1,0 +1,142 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# .gitignore — appointai-platform
+# Rule: commit code, configs, and migrations. Never commit secrets or generated
+#       artefacts that can be reproduced locally.
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+# ── Secrets and credentials ───────────────────────────────────────────────────
+# These files contain real API keys, passwords, tokens, or recovery codes.
+# NEVER commit any of these under any circumstances.
+.env
+passwords.txt
+twilio_2FA_recovery_code.txt
+*.pem
+*.key
+*.p12
+*.pfx
+token.json
+credentials.json
+service_account.json
+google_credentials.json
+*_secret.json
+*secret*.txt
+*password*.txt
+
+
+# ── Docs folder (excluded for now — add back when ready to publish) ───────────
+docs/
+
+
+# ── Course / personal notes (not part of the product codebase) ───────────────
+interview_docs/
+SKILLS.md
+RULES.md
+
+
+# ── Claude Code internal state and attribution files ─────────────────────────
+.claude/
+CLAUDE.md
+
+
+# ── Python runtime artefacts ─────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+
+# Virtual environments — use conda or venv locally, never commit
+.venv/
+venv/
+env/
+ENV/
+.conda/
+
+# Build / distribution
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+wheels/
+*.whl
+*.tar.gz
+
+# Type stubs (auto-generated)
+*.pyi
+
+
+# ── Testing and coverage ──────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.xml
+nosetests.xml
+test-results/
+
+
+# ── Alembic ───────────────────────────────────────────────────────────────────
+# Keep all migration .py files — they are source code.
+# Only exclude compiled bytecode cache.
+migrations/__pycache__/
+migrations/versions/__pycache__/
+
+
+# ── IDEs and editors ──────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*~
+*.sublime-project
+*.sublime-workspace
+
+
+# ── Operating system ──────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+
+# ── Docker volumes (local data mounts — not source code) ─────────────────────
+postgres_data/
+redis_data/
+docker_data/
+
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+log/
+
+
+# ── Node / Frontend build artefacts (Phase 4 — React frontend) ───────────────
+node_modules/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+*.local
+
+
+# ── Jupyter notebooks (course material, not product code) ────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+
+# ── Misc generated / temporary files ─────────────────────────────────────────
+*.bak
+*.tmp
+*.temp
+*.orig
+.hypothesis/

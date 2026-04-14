@@ -1,0 +1,8 @@
+Generic single-database configuration with an async dbapi.
+
+Commands:
+  Create migration:   alembic revision --autogenerate -m "description"
+  Apply migrations:   alembic upgrade head
+  Rollback one step:  alembic downgrade -1
+  View history:       alembic history --verbose
+  Current version:    alembic current

@@ -1,0 +1,45 @@
+version: "3.9"
+
+# ── AI Appointment Agent Platform — Cloud-backed Dev Stack ────────────────────
+# PostgreSQL → Supabase (cloud)
+# Redis      → Upstash (cloud)
+# All connection strings come from .env — no local DB containers needed.
+#
+# Start: docker-compose up -d
+# Logs:  docker-compose logs -f backend
+
+services:
+
+  # ── FastAPI Backend ───────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: appointment_backend
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend  # hot-reload in dev
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ── Celery Worker ─────────────────────────────────────────────────────────────
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: appointment_celery_worker
+    restart: unless-stopped
+    env_file: .env
+    command: celery -A backend.workers.celery_app worker --loglevel=info --concurrency=4
+
+  # ── Celery Beat (Scheduled Tasks / Reminders) ─────────────────────────────────
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: appointment_celery_beat
+    restart: unless-stopped
+    env_file: .env
+    command: celery -A backend.workers.celery_app beat --loglevel=info

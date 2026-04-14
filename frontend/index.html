@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AppointAI — AI Appointment Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out',
+            'slide-up': 'slideUp 0.4s ease-out',
+            'pulse-slow': 'pulse 3s infinite',
+          },
+          keyframes: {
+            fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+            slideUp: { from: { opacity: 0, transform: 'translateY(16px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 4px; }
+    .glass { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.06); }
+    .gradient-text { background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .gradient-bg { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+    .stat-card { background: linear-gradient(135deg, rgba(79,70,229,0.15), rgba(124,58,237,0.1)); border: 1px solid rgba(99,102,241,0.25); }
+    .nav-item { transition: all 0.2s; border-left: 3px solid transparent; }
+    .nav-item.active { border-left-color: #6366f1; background: rgba(99,102,241,0.12); color: #818cf8; }
+    .nav-item:hover:not(.active) { background: rgba(255,255,255,0.05); }
+    .chat-bubble-user { background: linear-gradient(135deg, #4f46e5, #7c3aed); border-radius: 18px 18px 4px 18px; }
+    .chat-bubble-ai { background: #1e293b; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px 18px 18px 4px; }
+    .status-confirmed { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .status-pending { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .status-cancelled { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .status-completed { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+    .btn-primary { background: linear-gradient(135deg, #4f46e5, #7c3aed); transition: all 0.2s; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(99,102,241,0.35); }
+    .tenant-card { transition: all 0.3s; border: 1px solid rgba(255,255,255,0.08); }
+    .tenant-card:hover { transform: translateY(-4px); border-color: rgba(99,102,241,0.5); box-shadow: 0 20px 40px rgba(79,70,229,0.2); }
+    .typing-dot { animation: typing 1.4s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
+  </style>
+</head>
+<body class="min-h-screen">
+
+<!-- ═══════════════════════════════════════════════════════════ LOGIN SCREEN -->
+<div id="view-login" class="min-h-screen flex flex-col items-center justify-center px-4 animate-fade-in">
+
+  <!-- Background glow -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600 opacity-10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-600 opacity-10 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative z-10 w-full max-w-4xl">
+    <!-- Logo -->
+    <div class="text-center mb-12">
+      <div class="inline-flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center">
+          <i class="fa-solid fa-robot text-white text-lg"></i>
+        </div>
+        <span class="text-2xl font-bold text-white">AppointAI</span>
+      </div>
+      <h1 class="text-4xl font-bold text-white mb-3">Multi-Tenant AI Appointment Platform</h1>
+      <p class="text-slate-400 text-lg">Select a demo business to explore the platform</p>
+    </div>
+
+    <!-- Tenant Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+      <!-- MedCare Clinic -->
+      <div class="tenant-card glass rounded-2xl p-8 cursor-pointer" onclick="loginAs('medcare')">
+        <div class="flex items-start justify-between mb-6">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3)">
+            <i class="fa-solid fa-hospital text-emerald-400 text-2xl"></i>
+          </div>
+          <span class="text-xs font-medium px-3 py-1 rounded-full" style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)">Clinic</span>
+        </div>
+        <h2 class="text-xl font-bold text-white mb-2">MedCare Clinic</h2>
+        <p class="text-slate-400 text-sm mb-5">Multi-specialty outpatient clinic with morning & evening OPD sessions</p>
+        <div class="flex flex-wrap gap-2 mb-6">
+          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">General OPD</span>
+          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Paediatrics</span>
+          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Gynaecology</span>
+        </div>
+        <div class="flex items-center justify-between text-sm text-slate-400 mb-6">
+          <span><i class="fa-regular fa-clock mr-1"></i> Mon–Fri 9–1 PM, 5–8:30 PM</span>
+          <span><i class="fa-solid fa-user-doctor mr-1"></i> 3 doctors</span>
+        </div>
+        <button class="w-full btn-primary text-white font-semibold py-3 rounded-xl text-sm">
+          <i class="fa-solid fa-arrow-right-to-bracket mr-2"></i>Demo as MedCare
+        </button>
+      </div>
+
+      <!-- Gloss & Glow Salon -->
+      <div class="tenant-card glass rounded-2xl p-8 cursor-pointer" onclick="loginAs('glossglow')">
+        <div class="flex items-start justify-between mb-6">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:rgba(236,72,153,0.15);border:1px solid rgba(236,72,153,0.3)">
+            <i class="fa-solid fa-scissors text-pink-400 text-2xl"></i>
+          </div>
+          <span class="text-xs font-medium px-3 py-1 rounded-full" style="background:rgba(236,72,153,0.15);color:#f472b6;border:1px solid rgba(236,72,153,0.3)">Salon</span>
+        </div>
+        <h2 class="text-xl font-bold text-white mb-2">Gloss & Glow Salon</h2>
+        <p class="text-slate-400 text-sm mb-5">Premium beauty salon with Hair, Skin, Nails and Bridal services</p>
+        <div class="flex flex-wrap gap-2 mb-6">
+          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Hair</span>
+          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Skin & Facial</span>
+          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Nails</span>
+          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Bridal</span>
+        </div>
+        <div class="flex items-center justify-between text-sm text-slate-400 mb-6">
+          <span><i class="fa-regular fa-clock mr-1"></i> Tue–Sun 10 AM – 9 PM</span>
+          <span><i class="fa-solid fa-person mr-1"></i> 3 stylists</span>
+        </div>
+        <button class="w-full btn-primary text-white font-semibold py-3 rounded-xl text-sm">
+          <i class="fa-solid fa-arrow-right-to-bracket mr-2"></i>Demo as Gloss & Glow
+        </button>
+      </div>
+    </div>
+
+    <!-- Error message -->
+    <div id="login-error" class="hidden text-center py-3 px-4 rounded-xl text-red-400 text-sm" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)"></div>
+
+    <p class="text-center text-slate-500 text-xs mt-6">
+      <i class="fa-solid fa-shield-halved mr-1"></i>
+      Demo mode — data is synthetic. Backend: <code class="text-indigo-400">localhost:8000</code>
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ MAIN APP -->
+<div id="view-app" class="hidden min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 min-h-screen glass flex flex-col fixed left-0 top-0 bottom-0 z-20" style="border-right:1px solid rgba(255,255,255,0.06)">
+    <!-- Logo -->
+    <div class="p-6 border-b" style="border-color:rgba(255,255,255,0.06)">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
+          <i class="fa-solid fa-robot text-white text-sm"></i>
+        </div>
+        <span class="font-bold text-white">AppointAI</span>
+      </div>
+    </div>
+
+    <!-- Tenant info -->
+    <div class="px-4 py-4 border-b mx-3 mt-3 rounded-xl" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2)">
+      <div class="flex items-center gap-3">
+        <div id="sidebar-tenant-icon" class="w-9 h-9 rounded-lg flex items-center justify-center gradient-bg">
+          <i class="fa-solid fa-hospital text-white text-sm"></i>
+        </div>
+        <div class="min-w-0">
+          <p id="sidebar-tenant-name" class="text-white font-semibold text-sm truncate">MedCare Clinic</p>
+          <p id="sidebar-tenant-plan" class="text-indigo-400 text-xs">Starter Plan</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <button onclick="showView('dashboard')" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300" id="nav-dashboard">
+        <i class="fa-solid fa-gauge-high w-4"></i> Dashboard
+      </button>
+      <button onclick="showView('appointments')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300" id="nav-appointments">
+        <i class="fa-regular fa-calendar-check w-4"></i> Appointments
+      </button>
+      <button onclick="showView('staff')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300" id="nav-staff">
+        <i class="fa-solid fa-user-group w-4"></i> Staff
+      </button>
+      <button onclick="showView('services')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300" id="nav-services">
+        <i class="fa-solid fa-list-check w-4"></i> Services
+      </button>
+      <button onclick="showView('calendar')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300" id="nav-calendar">
+        <i class="fa-regular fa-calendar w-4"></i> Calendar
+      </button>
+      <button onclick="showView('agents')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300" id="nav-agents">
+        <i class="fa-solid fa-diagram-project w-4"></i> Agent Setup
+        <span id="nav-agents-badge" class="ml-auto text-xs px-2 py-0.5 rounded-full hidden" style="background:rgba(245,158,11,0.2);color:#fbbf24">Setup</span>
+      </button>
+      <button onclick="showView('chat')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300" id="nav-chat">
+        <i class="fa-solid fa-comments w-4"></i> AI Chat Agent
+        <span id="nav-chat-badge" class="ml-auto text-xs px-2 py-0.5 rounded-full" style="background:rgba(99,102,241,0.2);color:#818cf8">—</span>
+      </button>
+    </nav>
+
+    <!-- Logout -->
+    <div class="p-4 border-t" style="border-color:rgba(255,255,255,0.06)">
+      <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+        <i class="fa-solid fa-right-from-bracket"></i> Switch Tenant
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="ml-64 flex-1 flex flex-col min-h-screen">
+
+    <!-- Top bar -->
+    <header class="h-16 flex items-center justify-between px-8 border-b sticky top-0 z-10" style="background:rgba(15,23,42,0.9);backdrop-filter:blur(12px);border-color:rgba(255,255,255,0.06)">
+      <div>
+        <h1 id="page-title" class="text-white font-semibold text-lg">Dashboard</h1>
+        <p id="page-sub" class="text-slate-500 text-xs">Overview of your appointment activity</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-slow"></div>
+        <span class="text-emerald-400 text-xs font-medium">System Online</span>
+      </div>
+    </header>
+
+    <!-- ── DASHBOARD ── -->
+    <div id="page-dashboard" class="p-8 animate-slide-up">
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="stat-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-sm">Total</span>
+            <i class="fa-regular fa-calendar text-indigo-400"></i>
+          </div>
+          <p id="stat-total" class="text-3xl font-bold text-white">—</p>
+          <p class="text-slate-500 text-xs mt-1">Appointments</p>
+        </div>
+        <div class="stat-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-sm">Confirmed</span>
+            <i class="fa-solid fa-circle-check text-emerald-400"></i>
+          </div>
+          <p id="stat-confirmed" class="text-3xl font-bold text-emerald-400">—</p>
+          <p class="text-slate-500 text-xs mt-1">Ready to go</p>
+        </div>
+        <div class="stat-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-sm">Pending</span>
+            <i class="fa-solid fa-clock text-amber-400"></i>
+          </div>
+          <p id="stat-pending" class="text-3xl font-bold text-amber-400">—</p>
+          <p class="text-slate-500 text-xs mt-1">Awaiting confirm</p>
+        </div>
+        <div class="stat-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-sm">Staff</span>
+            <i class="fa-solid fa-users text-violet-400"></i>
+          </div>
+          <p id="stat-staff" class="text-3xl font-bold text-violet-400">—</p>
+          <p class="text-slate-500 text-xs mt-1">Active members</p>
+        </div>
+      </div>
+
+      <!-- AI Banner -->
+      <div class="rounded-2xl p-6 mb-8 relative overflow-hidden" style="background:linear-gradient(135deg,rgba(79,70,229,0.25),rgba(124,58,237,0.15));border:1px solid rgba(99,102,241,0.3)">
+        <div class="absolute right-6 top-1/2 -translate-y-1/2 opacity-10">
+          <i class="fa-solid fa-robot text-8xl text-indigo-400"></i>
+        </div>
+        <div class="relative z-10">
+          <h3 class="text-white font-bold text-lg mb-1">AI Booking Agent is Active</h3>
+          <p class="text-slate-400 text-sm mb-4">Your virtual receptionist handles bookings, reschedules, and cancellations 24/7 via WhatsApp, SMS, and Web Chat.</p>
+          <button onclick="showView('chat')" class="btn-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">
+            <i class="fa-solid fa-comments mr-2"></i>Open Chat Agent
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Appointments -->
+      <div class="glass rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="text-white font-semibold">Recent Appointments</h3>
+          <button onclick="showView('appointments')" class="text-indigo-400 text-sm hover:text-indigo-300 transition-colors">View all →</button>
+        </div>
+        <div id="dashboard-appointments" class="space-y-3">
+          <div class="text-slate-500 text-sm text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── APPOINTMENTS ── -->
+    <div id="page-appointments" class="hidden p-8 animate-slide-up">
+      <div class="glass rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-white font-semibold">All Appointments</h3>
+          <div class="flex gap-2">
+            <select id="appt-filter-status" onchange="loadAppointments()" class="text-sm bg-slate-800 border border-slate-700 text-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+              <option value="">All Status</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div id="appointments-list" class="space-y-3">
+          <div class="text-slate-500 text-sm text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STAFF ── -->
+    <div id="page-staff" class="hidden p-8 animate-slide-up">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-white font-bold text-lg">Staff Members</h2>
+          <p class="text-slate-500 text-sm">Manage team, working hours, and specializations</p>
+        </div>
+        <button onclick="openStaffModal()" class="btn-primary text-white text-sm font-semibold px-4 py-2.5 rounded-xl">
+          <i class="fa-solid fa-user-plus mr-2"></i>Add Staff
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="staff-grid">
+        <div class="text-slate-500 text-sm text-center py-8 col-span-3"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</div>
+      </div>
+    </div>
+
+    <!-- ── SERVICES ── -->
+    <div id="page-services" class="hidden p-8 animate-slide-up">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-white font-bold text-lg">Rate Card</h2>
+          <p class="text-slate-500 text-sm">Services offered · Prices shown to clients</p>
+        </div>
+        <button onclick="openServiceModal()" class="btn-primary text-white text-sm font-semibold px-4 py-2.5 rounded-xl">
+          <i class="fa-solid fa-plus mr-2"></i>Add Service
+        </button>
+      </div>
+      <div id="services-rate-card" class="space-y-8">
+        <div class="text-slate-500 text-sm text-center py-12"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</div>
+      </div>
+    </div>
+
+    <!-- ── CALENDAR ── -->
+    <div id="page-calendar" class="hidden p-8 animate-slide-up">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+          <button onclick="calNav(-1)" class="w-9 h-9 glass rounded-xl flex items-center justify-center hover:bg-white/10 transition-all text-slate-300">
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+          </button>
+          <h2 id="cal-title" class="text-white font-bold text-lg w-44 text-center">April 2026</h2>
+          <button onclick="calNav(1)" class="w-9 h-9 glass rounded-xl flex items-center justify-center hover:bg-white/10 transition-all text-slate-300">
+            <i class="fa-solid fa-chevron-right text-sm"></i>
+          </button>
+        </div>
+        <div class="flex items-center gap-3 text-xs">
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>Confirmed</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>Pending</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-400 inline-block"></span>Cancelled</span>
+        </div>
+      </div>
+
+      <!-- Calendar grid -->
+      <div class="glass rounded-2xl p-5 mb-6">
+        <!-- Weekday headers -->
+        <div class="grid grid-cols-7 mb-3">
+          <div class="text-center text-slate-500 text-xs font-medium py-2">Mon</div>
+          <div class="text-center text-slate-500 text-xs font-medium py-2">Tue</div>
+          <div class="text-center text-slate-500 text-xs font-medium py-2">Wed</div>
+          <div class="text-center text-slate-500 text-xs font-medium py-2">Thu</div>
+          <div class="text-center text-slate-500 text-xs font-medium py-2">Fri</div>
+          <div class="text-center text-slate-500 text-xs font-medium py-2">Sat</div>
+          <div class="text-center text-slate-500 text-xs font-medium py-2">Sun</div>
+        </div>
+        <!-- Day cells — populated by JS -->
+        <div id="cal-grid" class="grid grid-cols-7 gap-1"></div>
+      </div>
+
+      <!-- Two-column layout: selected day + slot checker -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Selected day appointments -->
+        <div class="glass rounded-2xl p-5">
+          <h3 class="text-white font-semibold mb-4" id="cal-day-title">Select a day to view appointments</h3>
+          <div id="cal-day-appointments" class="space-y-3">
+            <p class="text-slate-500 text-sm text-center py-6">Click any date on the calendar</p>
+          </div>
+        </div>
+
+        <!-- Slot availability checker -->
+        <div class="glass rounded-2xl p-5">
+          <h3 class="text-white font-semibold mb-4"><i class="fa-solid fa-clock text-indigo-400 mr-2"></i>Check Available Slots</h3>
+          <div class="space-y-3 mb-4">
+            <div>
+              <label class="text-slate-400 text-xs mb-1 block">Service</label>
+              <select id="slot-service-select" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-indigo-500">
+                <option value="">Select service...</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-slate-400 text-xs mb-1 block">Staff (optional)</label>
+              <select id="slot-staff-select" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-indigo-500">
+                <option value="">Any available staff</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-slate-400 text-xs mb-1 block">Date</label>
+              <input type="date" id="slot-date-input" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-indigo-500" />
+            </div>
+            <button onclick="checkSlots()" class="w-full btn-primary text-white text-sm font-semibold py-2.5 rounded-xl">
+              <i class="fa-solid fa-magnifying-glass mr-2"></i>Check Slots
+            </button>
+          </div>
+          <div id="slots-result" class="space-y-4"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AGENT SETUP ── -->
+    <div id="page-agents" class="hidden p-8 animate-slide-up">
+
+      <!-- Header -->
+      <div class="mb-8">
+        <h2 class="text-white font-bold text-xl mb-1">AI Agent Templates</h2>
+        <p class="text-slate-400 text-sm">Choose a preset agent configuration and activate it in one click. Each template connects the right agents automatically.</p>
+      </div>
+
+      <!-- Active agent info (shown when deployed) -->
+      <div id="active-agent-info" class="hidden mb-8 rounded-2xl p-6" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.1));border:1px solid rgba(16,185,129,0.3)">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:rgba(16,185,129,0.2)">
+              <i class="fa-solid fa-circle-check text-emerald-400 text-2xl"></i>
+            </div>
+            <div>
+              <h3 class="text-white font-bold text-lg" id="active-agent-name">Agent Active</h3>
+              <p class="text-emerald-400 text-sm">Deployed · Ready to handle conversations</p>
+              <p class="text-slate-500 text-xs mt-1">Graph ID: <code id="active-agent-id" class="text-slate-300 font-mono"></code></p>
+            </div>
+          </div>
+          <button onclick="showView('chat')" class="btn-primary text-white text-sm font-semibold px-4 py-2 rounded-xl">
+            <i class="fa-solid fa-comments mr-2"></i>Open Chat
+          </button>
+        </div>
+      </div>
+
+      <!-- Activation progress (shown during activation) -->
+      <div id="activation-progress" class="hidden mb-8 glass rounded-2xl p-6">
+        <h3 class="text-white font-semibold mb-5">Activating your AI Agent...</h3>
+        <div class="space-y-4">
+          <div id="step-create" class="flex items-center gap-4">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 step-icon" style="background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.4)">
+              <i class="fa-solid fa-spinner fa-spin text-indigo-400 text-xs"></i>
+            </div>
+            <div>
+              <p class="text-white text-sm font-medium">Creating graph definition</p>
+              <p class="text-slate-500 text-xs">Saving agent nodes and routing edges to database</p>
+            </div>
+          </div>
+          <div id="step-deploy" class="flex items-center gap-4 opacity-40">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 step-icon" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2)">
+              <i class="fa-solid fa-rocket text-indigo-400 text-xs"></i>
+            </div>
+            <div>
+              <p class="text-white text-sm font-medium">Deploying to production</p>
+              <p class="text-slate-500 text-xs">Compiling LangGraph state machine and enabling live routing</p>
+            </div>
+          </div>
+          <div id="step-live" class="flex items-center gap-4 opacity-40">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 step-icon" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2)">
+              <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
+            </div>
+            <div>
+              <p class="text-white text-sm font-medium">Agent is live</p>
+              <p class="text-slate-500 text-xs">Chat endpoint connected · Tenant isolated</p>
+            </div>
+          </div>
+        </div>
+        <div id="activation-error" class="hidden mt-4 p-3 rounded-xl text-red-400 text-sm" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)"></div>
+      </div>
+
+      <!-- Template Cards -->
+      <div id="agent-templates" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Full Booking Suite -->
+        <div class="glass rounded-2xl p-6 hover:border-indigo-500/40 transition-all cursor-default" style="border-color:rgba(99,102,241,0.25)">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center gradient-bg">
+              <i class="fa-solid fa-network-wired text-white text-lg"></i>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:rgba(99,102,241,0.2);color:#818cf8">Recommended</span>
+          </div>
+          <h3 class="text-white font-bold text-lg mb-2">Full Booking Suite</h3>
+          <p class="text-slate-400 text-sm mb-5">Complete 7-agent pipeline. Handles bookings, reschedules, cancellations, status checks, notifications, and escalations.</p>
+
+          <!-- Mini flow diagram -->
+          <div class="mb-5 p-4 rounded-xl" style="background:rgba(0,0,0,0.2)">
+            <div class="flex flex-col gap-1.5 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-1 rounded-md font-medium" style="background:rgba(99,102,241,0.3);color:#a5b4fc">Intent Classifier</span>
+                <i class="fa-solid fa-arrow-right text-slate-600 text-xs"></i>
+                <span class="text-slate-400">routes to →</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5 ml-3">
+                <span class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(16,185,129,0.15);color:#34d399">Book</span>
+                <span class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(245,158,11,0.15);color:#fbbf24">Reschedule</span>
+                <span class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(239,68,68,0.15);color:#f87171">Cancel</span>
+                <span class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(99,102,241,0.15);color:#a5b4fc">Status</span>
+                <span class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(156,163,175,0.15);color:#9ca3af">Escalate</span>
+              </div>
+              <div class="flex items-center gap-2 ml-3">
+                <i class="fa-solid fa-arrow-down text-slate-600"></i>
+                <span class="px-1.5 py-0.5 rounded text-xs" style="background:rgba(168,85,247,0.15);color:#c084fc">Notification Agent</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-500 mb-5">
+            <i class="fa-solid fa-microchip text-indigo-400"></i> 7 agents
+            <span class="text-slate-700">·</span>
+            <i class="fa-solid fa-code-branch text-indigo-400"></i> 11 routes
+            <span class="text-slate-700">·</span>
+            <i class="fa-solid fa-shield-halved text-indigo-400"></i> Tenant-isolated
+          </div>
+
+          <button onclick="activateAgent('full')" id="btn-activate-full"
+            class="w-full btn-primary text-white font-semibold py-3 rounded-xl text-sm">
+            <i class="fa-solid fa-bolt mr-2"></i>Activate Full Suite
+          </button>
+        </div>
+
+        <!-- Booking Only -->
+        <div class="glass rounded-2xl p-6 hover:border-indigo-500/40 transition-all cursor-default">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(16,185,129,0.3),rgba(5,150,105,0.2));border:1px solid rgba(16,185,129,0.3)">
+              <i class="fa-solid fa-calendar-plus text-emerald-400 text-lg"></i>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:rgba(16,185,129,0.15);color:#34d399">Simple</span>
+          </div>
+          <h3 class="text-white font-bold text-lg mb-2">Booking Only</h3>
+          <p class="text-slate-400 text-sm mb-5">Minimal 3-agent setup. Just intent classification, appointment booking, and confirmation notifications.</p>
+
+          <div class="mb-5 p-4 rounded-xl" style="background:rgba(0,0,0,0.2)">
+            <div class="flex flex-col gap-1.5 text-xs">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="px-2 py-1 rounded-md" style="background:rgba(99,102,241,0.3);color:#a5b4fc">Intent Classifier</span>
+                <i class="fa-solid fa-arrow-right text-slate-600"></i>
+                <span class="px-2 py-1 rounded-md" style="background:rgba(16,185,129,0.2);color:#34d399">Booking Agent</span>
+                <i class="fa-solid fa-arrow-right text-slate-600"></i>
+                <span class="px-2 py-1 rounded-md" style="background:rgba(168,85,247,0.2);color:#c084fc">Notify</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-500 mb-5">
+            <i class="fa-solid fa-microchip text-emerald-400"></i> 3 agents
+            <span class="text-slate-700">·</span>
+            <i class="fa-solid fa-code-branch text-emerald-400"></i> 3 routes
+          </div>
+
+          <button onclick="activateAgent('booking')" id="btn-activate-booking"
+            class="w-full text-white font-semibold py-3 rounded-xl text-sm transition-all hover:opacity-90" style="background:linear-gradient(135deg,rgba(16,185,129,0.5),rgba(5,150,105,0.4));border:1px solid rgba(16,185,129,0.4)">
+            <i class="fa-solid fa-bolt mr-2"></i>Activate Booking Only
+          </button>
+        </div>
+
+        <!-- Status Checker -->
+        <div class="glass rounded-2xl p-6 hover:border-indigo-500/40 transition-all cursor-default">
+          <div class="flex items-start justify-between mb-5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:linear-gradient(135deg,rgba(245,158,11,0.3),rgba(217,119,6,0.2));border:1px solid rgba(245,158,11,0.3)">
+              <i class="fa-solid fa-magnifying-glass text-amber-400 text-lg"></i>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:rgba(245,158,11,0.15);color:#fbbf24">Read-Only</span>
+          </div>
+          <h3 class="text-white font-bold text-lg mb-2">Info & Status</h3>
+          <p class="text-slate-400 text-sm mb-5">2-agent read-only setup. Patients can check their appointment status and escalate if needed. No booking.</p>
+
+          <div class="mb-5 p-4 rounded-xl" style="background:rgba(0,0,0,0.2)">
+            <div class="flex flex-col gap-1.5 text-xs">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="px-2 py-1 rounded-md" style="background:rgba(99,102,241,0.3);color:#a5b4fc">Intent Classifier</span>
+                <i class="fa-solid fa-arrow-right text-slate-600"></i>
+                <span class="px-2 py-1 rounded-md" style="background:rgba(245,158,11,0.2);color:#fbbf24">Status Checker</span>
+              </div>
+              <div class="text-slate-600 text-xs ml-2">+ Escalation Agent for unhandled queries</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-500 mb-5">
+            <i class="fa-solid fa-microchip text-amber-400"></i> 3 agents
+            <span class="text-slate-700">·</span>
+            <i class="fa-solid fa-code-branch text-amber-400"></i> 3 routes
+          </div>
+
+          <button onclick="activateAgent('info')" id="btn-activate-info"
+            class="w-full text-white font-semibold py-3 rounded-xl text-sm transition-all hover:opacity-90" style="background:linear-gradient(135deg,rgba(245,158,11,0.4),rgba(217,119,6,0.3));border:1px solid rgba(245,158,11,0.3)">
+            <i class="fa-solid fa-bolt mr-2"></i>Activate Info Agent
+          </button>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="mt-8 glass rounded-2xl p-6">
+        <h3 class="text-white font-semibold mb-4"><i class="fa-solid fa-circle-info text-indigo-400 mr-2"></i>How Agent Activation Works</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-lg gradient-bg flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">1</div>
+            <div>
+              <p class="text-white font-medium">Graph Created</p>
+              <p class="text-slate-500 text-xs mt-0.5">Agent nodes and routing edges are saved as a versioned graph definition in the database.</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-lg gradient-bg flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">2</div>
+            <div>
+              <p class="text-white font-medium">Version Deployed</p>
+              <p class="text-slate-500 text-xs mt-0.5">LangGraph compiles the state machine. The graph version is marked live and cached in Redis.</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-lg gradient-bg flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">3</div>
+            <div>
+              <p class="text-white font-medium">Chat Goes Live</p>
+              <p class="text-slate-500 text-xs mt-0.5">The <code class="text-indigo-400">/chat/{graph_id}</code> endpoint is enabled for this tenant only. Full isolation.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CHAT ── -->
+    <div id="page-chat" class="hidden flex flex-col h-screen animate-fade-in" style="height:calc(100vh - 64px)">
+      <div class="flex-1 overflow-y-auto p-6 space-y-4" id="chat-messages">
+        <!-- Welcome message -->
+        <div class="flex gap-3 items-end">
+          <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-robot text-white text-xs"></i>
+          </div>
+          <div class="chat-bubble-ai p-4 max-w-md">
+            <p class="text-white text-sm">Hello! I'm your AI appointment assistant. I can help you:</p>
+            <ul class="text-slate-300 text-sm mt-2 space-y-1">
+              <li><i class="fa-solid fa-check text-indigo-400 mr-2 text-xs"></i>Book a new appointment</li>
+              <li><i class="fa-solid fa-check text-indigo-400 mr-2 text-xs"></i>Check your booking status</li>
+              <li><i class="fa-solid fa-check text-indigo-400 mr-2 text-xs"></i>Reschedule or cancel</li>
+            </ul>
+            <p class="text-slate-400 text-xs mt-3">How can I help you today?</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat status banner — changes based on agent state -->
+      <div id="chat-graph-banner" class="mx-6 mb-2 p-3 rounded-xl items-center gap-3 text-sm hidden"></div>
+
+      <!-- Chat input -->
+      <div class="p-4 border-t" style="border-color:rgba(255,255,255,0.06)">
+        <div class="flex gap-3 items-end">
+          <div class="flex-1 relative">
+            <textarea id="chat-input" rows="1" placeholder="Type your message... e.g. 'Book an appointment for tomorrow at 10am'"
+              class="w-full bg-slate-800 border border-slate-700 text-white rounded-2xl px-5 py-3.5 pr-14 text-sm resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+              onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+          </div>
+          <button onclick="sendMessage()" class="btn-primary w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-paper-plane text-white text-sm"></i>
+          </button>
+        </div>
+        <p class="text-slate-600 text-xs mt-2 text-center">AI agent powered by EuriAI · LangGraph orchestration</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ MODALS -->
+
+<!-- Modal backdrop -->
+<div id="modal-backdrop" class="hidden fixed inset-0 z-40 flex items-center justify-center p-4" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px)" onclick="closeAllModals(event)">
+
+  <!-- Service Modal -->
+  <div id="modal-service" class="hidden glass rounded-2xl w-full max-w-lg p-6 animate-slide-up" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-5">
+      <h3 id="service-modal-title" class="text-white font-bold text-lg">Add Service</h3>
+      <button onclick="closeAllModals()" class="text-slate-500 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+    </div>
+    <div class="space-y-4">
+      <input type="hidden" id="service-id-field" />
+      <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+          <label class="text-slate-400 text-xs mb-1 block">Service Name *</label>
+          <input id="svc-name" type="text" placeholder="e.g. Haircut + Beard" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">Category</label>
+          <input id="svc-category" type="text" placeholder="e.g. Hair, Skin, OPD" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">Price (₹) *</label>
+          <input id="svc-price" type="number" min="0" step="0.5" placeholder="550" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">Duration (minutes) *</label>
+          <select id="svc-duration" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500">
+            <option value="15">15 min</option>
+            <option value="20">20 min</option>
+            <option value="30" selected>30 min</option>
+            <option value="45">45 min</option>
+            <option value="60">60 min</option>
+            <option value="90">90 min</option>
+            <option value="120">120 min</option>
+            <option value="180">180 min</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">Buffer (minutes)</label>
+          <select id="svc-buffer" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500">
+            <option value="0">0 min (back-to-back)</option>
+            <option value="5">5 min</option>
+            <option value="10" selected>10 min</option>
+            <option value="15">15 min</option>
+            <option value="30">30 min</option>
+          </select>
+        </div>
+        <div class="col-span-2">
+          <label class="text-slate-400 text-xs mb-1 block">Description (optional)</label>
+          <input id="svc-description" type="text" placeholder="Brief description for clients" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div class="col-span-2">
+          <label class="text-slate-400 text-xs mb-2 block">Assigned Staff</label>
+          <div id="svc-staff-checkboxes" class="grid grid-cols-2 gap-2"></div>
+          <p class="text-slate-600 text-xs mt-1">Leave all unchecked = any staff can perform this service</p>
+        </div>
+      </div>
+      <div id="service-modal-error" class="hidden text-red-400 text-sm p-3 rounded-xl" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)"></div>
+      <div class="flex gap-3 pt-2">
+        <button onclick="closeAllModals()" class="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all border border-slate-700">Cancel</button>
+        <button onclick="saveService()" class="flex-1 btn-primary text-white text-sm font-semibold py-2.5 rounded-xl">
+          <i class="fa-solid fa-floppy-disk mr-2"></i>Save Service
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Staff Modal -->
+  <div id="modal-staff" class="hidden glass rounded-2xl w-full max-w-xl p-6 animate-slide-up max-h-screen overflow-y-auto" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-5">
+      <h3 id="staff-modal-title" class="text-white font-bold text-lg">Add Staff Member</h3>
+      <button onclick="closeAllModals()" class="text-slate-500 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+    </div>
+    <div class="space-y-4">
+      <input type="hidden" id="staff-id-field" />
+      <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+          <label class="text-slate-400 text-xs mb-1 block">Full Name *</label>
+          <input id="staff-name" type="text" placeholder="e.g. Dr. Priya Mehta" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">Specialization</label>
+          <input id="staff-spec" type="text" placeholder="e.g. Hair Stylist" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">Phone</label>
+          <input id="staff-phone" type="text" placeholder="+91 98765 43210" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500" />
+        </div>
+        <div class="col-span-2">
+          <label class="text-slate-400 text-xs mb-1 block">Email</label>
+          <input id="staff-email" type="email" placeholder="staff@yourbusiness.com" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500" />
+        </div>
+      </div>
+
+      <!-- Working Hours -->
+      <div>
+        <label class="text-slate-400 text-xs mb-3 block font-medium">Working Hours</label>
+        <div class="space-y-2" id="working-hours-editor">
+          <!-- Populated by JS for each day -->
+        </div>
+        <p class="text-slate-600 text-xs mt-2">Multiple sessions per day (e.g. morning + evening) are supported — click the + button</p>
+      </div>
+
+      <div id="staff-modal-error" class="hidden text-red-400 text-sm p-3 rounded-xl" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)"></div>
+      <div class="flex gap-3 pt-2">
+        <button onclick="closeAllModals()" class="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all border border-slate-700">Cancel</button>
+        <button onclick="saveStaff()" class="flex-1 btn-primary text-white text-sm font-semibold py-2.5 rounded-xl">
+          <i class="fa-solid fa-floppy-disk mr-2"></i>Save Staff
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Loading overlay -->
+<div id="loading-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(15,23,42,0.85);backdrop-filter:blur(4px)">
+  <div class="text-center">
+    <div class="w-12 h-12 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+      <i class="fa-solid fa-robot text-white text-xl"></i>
+    </div>
+    <p class="text-white font-medium">Authenticating...</p>
+    <p class="text-slate-400 text-sm mt-1">Loading your workspace</p>
+  </div>
+</div>
+
+<script>
+  const API = '/api/v1';
+  let token = null;
+  let currentTenant = null;
+  let currentGraphId = null;
+  let currentGraphName = null;
+  let sessionId = null;
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+
+  async function loginAs(subdomain) {
+    document.getElementById('loading-overlay').classList.remove('hidden');
+    document.getElementById('login-error').classList.add('hidden');
+
+    try {
+      const res = await fetch(`${API}/auth/demo-token?subdomain=${subdomain}`);
+      const json = await res.json();
+
+      if (!res.ok) throw new Error(json.detail || 'Auth failed');
+
+      token = json.data.access_token;
+      currentTenant = json.data.tenant;
+      sessionId = crypto.randomUUID();
+
+      updateSidebar();
+      showApp();
+      showView('dashboard');
+      loadDashboard();
+      checkAndAutoConnectGraph();
+
+    } catch (err) {
+      document.getElementById('login-error').textContent = '⚠ ' + err.message;
+      document.getElementById('login-error').classList.remove('hidden');
+    } finally {
+      document.getElementById('loading-overlay').classList.add('hidden');
+    }
+  }
+
+  function logout() {
+    token = null; currentTenant = null; currentGraphId = null; currentGraphName = null;
+    document.getElementById('view-app').classList.add('hidden');
+    document.getElementById('view-login').classList.remove('hidden');
+    document.getElementById('chat-messages').innerHTML = `
+      <div class="flex gap-3 items-end">
+        <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center flex-shrink-0">
+          <i class="fa-solid fa-robot text-white text-xs"></i>
+        </div>
+        <div class="chat-bubble-ai p-4 max-w-md">
+          <p class="text-white text-sm">Hello! I'm your AI appointment assistant.</p>
+          <p class="text-slate-400 text-xs mt-2">How can I help you today?</p>
+        </div>
+      </div>`;
+  }
+
+  function updateSidebar() {
+    const isClinic = currentTenant.business_type === 'clinic';
+    document.getElementById('sidebar-tenant-name').textContent = currentTenant.name;
+    document.getElementById('sidebar-tenant-plan').textContent = currentTenant.plan.charAt(0).toUpperCase() + currentTenant.plan.slice(1) + ' Plan';
+    const icon = document.getElementById('sidebar-tenant-icon');
+    icon.innerHTML = `<i class="fa-solid ${isClinic ? 'fa-hospital' : 'fa-scissors'} text-white text-sm"></i>`;
+  }
+
+  function showApp() {
+    document.getElementById('view-login').classList.add('hidden');
+    document.getElementById('view-app').classList.remove('hidden');
+  }
+
+  // ── API helpers ───────────────────────────────────────────────────────────
+
+  async function apiFetch(path, opts = {}) {
+    const res = await fetch(API + path, {
+      ...opts,
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.detail || JSON.stringify(json));
+    return json;
+  }
+
+  // ── Views ─────────────────────────────────────────────────────────────────
+
+  const pages = { dashboard: 'page-dashboard', appointments: 'page-appointments', staff: 'page-staff', services: 'page-services', calendar: 'page-calendar', agents: 'page-agents', chat: 'page-chat' };
+  const titles = {
+    dashboard: ['Dashboard', 'Overview of your appointment activity'],
+    appointments: ['Appointments', 'Manage all bookings'],
+    staff: ['Staff', 'Team members and specializations'],
+    services: ['Services & Rate Card', 'Manage services, pricing and assigned staff'],
+    calendar: ['Calendar', 'Booking schedule, slot availability and cancellations'],
+    agents: ['Agent Setup', 'Choose and activate your AI agent configuration'],
+    chat: ['AI Chat Agent', 'Talk to your virtual receptionist'],
+  };
+
+  function showView(name) {
+    Object.entries(pages).forEach(([k, id]) => {
+      document.getElementById(id).classList.toggle('hidden', k !== name);
+      const nav = document.getElementById('nav-' + k);
+      if (nav) nav.classList.toggle('active', k === name);
+    });
+    const [title, sub] = titles[name] || ['', ''];
+    document.getElementById('page-title').textContent = title;
+    document.getElementById('page-sub').textContent = sub;
+
+    if (name === 'appointments') loadAppointments();
+    if (name === 'staff') loadStaff();
+    if (name === 'services') loadServices();
+    if (name === 'calendar') loadCalendar();
+    if (name === 'agents') loadAgentsPage();
+    if (name === 'chat') updateChatBanner();
+  }
+
+  // ── Dashboard ─────────────────────────────────────────────────────────────
+
+  async function loadDashboard() {
+    try {
+      const [apptRes, staffRes] = await Promise.all([
+        apiFetch('/appointments?limit=100'),
+        apiFetch('/staff'),
+      ]);
+
+      const appts = apptRes.items || [];
+      const confirmed = appts.filter(a => a.status === 'confirmed').length;
+      const pending = appts.filter(a => a.status === 'pending').length;
+
+      document.getElementById('stat-total').textContent = apptRes.total || appts.length;
+      document.getElementById('stat-confirmed').textContent = confirmed;
+      document.getElementById('stat-pending').textContent = pending;
+      document.getElementById('stat-staff').textContent = (staffRes.data || []).length;
+
+      // Recent appointments (top 5)
+      const recent = appts.slice(0, 5);
+      document.getElementById('dashboard-appointments').innerHTML = recent.length
+        ? recent.map(renderApptRow).join('')
+        : '<p class="text-slate-500 text-sm text-center py-6">No appointments yet</p>';
+
+    } catch (err) {
+      document.getElementById('dashboard-appointments').innerHTML =
+        `<p class="text-red-400 text-sm text-center py-4"><i class="fa-solid fa-circle-exclamation mr-2"></i>${err.message}</p>`;
+    }
+  }
+
+  // ── Appointments ──────────────────────────────────────────────────────────
+
+  async function loadAppointments() {
+    const status = document.getElementById('appt-filter-status').value;
+    const query = status ? `?status=${status}&limit=50` : '?limit=50';
+    document.getElementById('appointments-list').innerHTML = '<div class="text-slate-500 text-sm text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</div>';
+
+    try {
+      const res = await apiFetch('/appointments' + query);
+      const appts = res.items || [];
+      document.getElementById('appointments-list').innerHTML = appts.length
+        ? appts.map(renderApptRow).join('')
+        : '<p class="text-slate-500 text-sm text-center py-8">No appointments found</p>';
+    } catch (err) {
+      document.getElementById('appointments-list').innerHTML =
+        `<p class="text-red-400 text-sm text-center py-4">${err.message}</p>`;
+    }
+  }
+
+  function renderApptRow(a) {
+    const dt = new Date(a.slot_datetime);
+    const dateStr = dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
+    const timeStr = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' });
+    const statusClass = { confirmed: 'status-confirmed', pending: 'status-pending', cancelled: 'status-cancelled', completed: 'status-completed' }[a.status] || 'status-pending';
+    const channelIcon = { whatsapp: 'fa-whatsapp', sms: 'fa-sms', webchat: 'fa-globe', manual: 'fa-pen' };
+    const channelIc = channelIcon[a.channel] || 'fa-globe';
+
+    return `
+      <div class="flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-all" style="border:1px solid rgba(255,255,255,0.04)">
+        <div class="flex items-center gap-4 min-w-0">
+          <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">
+            ${a.patient_name.charAt(0).toUpperCase()}
+          </div>
+          <div class="min-w-0">
+            <p class="text-white font-medium text-sm truncate">${escHtml(a.patient_name)}</p>
+            <p class="text-slate-500 text-xs"><i class="fa-solid fa-phone mr-1"></i>${escHtml(a.patient_phone)}</p>
+          </div>
+        </div>
+        <div class="hidden md:flex items-center gap-2 text-slate-400 text-xs">
+          <i class="fa-regular fa-calendar"></i> ${dateStr}
+          <span class="text-slate-600">·</span>
+          <i class="fa-regular fa-clock"></i> ${timeStr} IST
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="hidden sm:inline text-slate-500 text-xs"><i class="fab ${channelIc} mr-1"></i>${a.channel}</span>
+          <span class="text-xs px-2.5 py-1 rounded-full font-medium ${statusClass}">${a.status}</span>
+        </div>
+      </div>`;
+  }
+
+  // ── Staff ─────────────────────────────────────────────────────────────────
+
+  async function loadStaff() {
+    document.getElementById('staff-grid').innerHTML = '<div class="text-slate-500 text-sm text-center py-8 col-span-3"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</div>';
+    try {
+      const res = await apiFetch('/staff');
+      cachedStaff = res.data || [];
+      document.getElementById('staff-grid').innerHTML = cachedStaff.length
+        ? cachedStaff.map(renderStaffCard).join('')
+        : '<div class="col-span-3 glass rounded-2xl p-10 text-center"><i class="fa-solid fa-user-group text-slate-600 text-4xl mb-4"></i><p class="text-white font-medium mb-2">No staff members yet</p><button onclick="openStaffModal()" class="btn-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl mt-2"><i class="fa-solid fa-user-plus mr-2"></i>Add First Staff</button></div>';
+    } catch (err) {
+      document.getElementById('staff-grid').innerHTML = `<p class="text-red-400 text-sm text-center py-4 col-span-3">${err.message}</p>`;
+    }
+  }
+
+  function renderStaffCard(s) {
+    const dayFull = { monday:'Mon',tuesday:'Tue',wednesday:'Wed',thursday:'Thu',friday:'Fri',saturday:'Sat',sunday:'Sun' };
+    const activeDays = Object.entries(s.working_hours || {})
+      .filter(([_, v]) => v && v.length > 0)
+      .map(([k]) => dayFull[k]).join(' · ');
+
+    return `
+      <div class="glass rounded-2xl p-6 hover:border-indigo-500/30 transition-all group">
+        <div class="flex items-start justify-between mb-4">
+          <div class="w-12 h-12 gradient-bg rounded-2xl flex items-center justify-center text-white font-bold text-lg">
+            ${escHtml(s.full_name.charAt(0))}
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs px-2 py-1 rounded-full ${s.is_active ? 'status-confirmed' : 'status-cancelled'}">${s.is_active ? 'Active' : 'Inactive'}</span>
+          </div>
+        </div>
+        <h3 class="text-white font-semibold mb-1">${escHtml(s.full_name)}</h3>
+        <p class="text-indigo-400 text-xs mb-3">${escHtml(s.specialization || '—')}</p>
+        ${activeDays ? `<p class="text-slate-500 text-xs mb-1"><i class="fa-regular fa-clock mr-1"></i>${activeDays}</p>` : ''}
+        ${s.phone ? `<p class="text-slate-500 text-xs mb-3"><i class="fa-solid fa-phone mr-1"></i>${escHtml(s.phone)}</p>` : '<div class="mb-3"></div>'}
+        ${s.calendar_connected ? '<p class="text-emerald-400 text-xs mb-3"><i class="fa-brands fa-google mr-1"></i>Calendar connected</p>' : ''}
+        <div class="flex gap-2 pt-3 border-t opacity-0 group-hover:opacity-100 transition-opacity" style="border-color:rgba(255,255,255,0.06)">
+          <button onclick="openStaffModal('${s.id}')" class="flex-1 text-xs py-1.5 rounded-lg text-indigo-400 hover:bg-indigo-400/10 transition-all border border-indigo-400/20">
+            <i class="fa-solid fa-pen mr-1"></i>Edit
+          </button>
+          ${s.is_active ? `<button onclick="deactivateStaff('${s.id}','${escHtml(s.full_name)}')" class="text-xs px-3 py-1.5 rounded-lg text-red-400 hover:bg-red-400/10 transition-all border border-red-400/20">
+            <i class="fa-solid fa-user-xmark"></i>
+          </button>` : ''}
+        </div>
+      </div>`;
+  }
+
+  const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+  const DAY_LABELS = { monday:'Monday',tuesday:'Tuesday',wednesday:'Wednesday',thursday:'Thursday',friday:'Friday',saturday:'Saturday',sunday:'Sunday' };
+
+  function openStaffModal(staffId = null) {
+    const errEl = document.getElementById('staff-modal-error');
+    errEl.classList.add('hidden');
+    document.getElementById('staff-modal-title').textContent = staffId ? 'Edit Staff Member' : 'Add Staff Member';
+    document.getElementById('staff-id-field').value = staffId || '';
+
+    // Build working hours editor
+    const editor = document.getElementById('working-hours-editor');
+    editor.innerHTML = DAYS.map(day => `
+      <div class="rounded-xl p-3" style="background:rgba(0,0,0,0.2)" id="wh-row-${day}">
+        <div class="flex items-center justify-between mb-2">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="wh-${day}-active" class="accent-indigo-500 wh-day-toggle" data-day="${day}" onchange="toggleDayRow('${day}')" />
+            <span class="text-slate-300 text-sm font-medium">${DAY_LABELS[day]}</span>
+          </label>
+          <button type="button" onclick="addShift('${day}')" class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors hidden wh-add-shift" data-day="${day}">
+            <i class="fa-solid fa-plus mr-1"></i>Add session
+          </button>
+        </div>
+        <div id="wh-${day}-shifts" class="space-y-1.5 hidden">
+          <!-- shifts added dynamically -->
+        </div>
+      </div>
+    `).join('');
+
+    if (staffId) {
+      const staff = cachedStaff.find(s => s.id === staffId);
+      if (staff) {
+        document.getElementById('staff-name').value = staff.full_name;
+        document.getElementById('staff-spec').value = staff.specialization || '';
+        document.getElementById('staff-phone').value = staff.phone || '';
+        document.getElementById('staff-email').value = staff.email || '';
+        // Populate working hours
+        for (const day of DAYS) {
+          const shifts = (staff.working_hours || {})[day] || [];
+          if (shifts.length) {
+            document.getElementById(`wh-${day}-active`).checked = true;
+            document.getElementById(`wh-${day}-shifts`).classList.remove('hidden');
+            document.querySelector(`.wh-add-shift[data-day="${day}"]`)?.classList.remove('hidden');
+            shifts.forEach(sh => addShiftRow(day, sh.start, sh.end));
+          }
+        }
+      }
+    } else {
+      ['staff-name','staff-spec','staff-phone','staff-email'].forEach(id => document.getElementById(id).value = '');
+    }
+
+    showModal('modal-staff');
+  }
+
+  function toggleDayRow(day) {
+    const active = document.getElementById(`wh-${day}-active`).checked;
+    const shiftsEl = document.getElementById(`wh-${day}-shifts`);
+    const addBtn = document.querySelector(`.wh-add-shift[data-day="${day}"]`);
+    if (active) {
+      shiftsEl.classList.remove('hidden');
+      addBtn?.classList.remove('hidden');
+      if (!shiftsEl.children.length) addShiftRow(day, '09:00', '18:00');
+    } else {
+      shiftsEl.classList.add('hidden');
+      addBtn?.classList.add('hidden');
+      shiftsEl.innerHTML = '';
+    }
+  }
+
+  function addShift(day) { addShiftRow(day, '09:00', '18:00'); }
+
+  function addShiftRow(day, startVal = '09:00', endVal = '18:00') {
+    const container = document.getElementById(`wh-${day}-shifts`);
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-2';
+    row.innerHTML = `
+      <input type="time" value="${startVal}" class="wh-start flex-1 bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500" data-day="${day}" />
+      <span class="text-slate-500 text-xs">to</span>
+      <input type="time" value="${endVal}" class="wh-end flex-1 bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500" data-day="${day}" />
+      <button type="button" onclick="this.closest('div').remove()" class="text-red-400 hover:text-red-300 text-xs px-1.5">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function collectWorkingHours() {
+    const wh = {};
+    for (const day of DAYS) {
+      const active = document.getElementById(`wh-${day}-active`).checked;
+      if (!active) { wh[day] = []; continue; }
+      const starts = [...document.querySelectorAll(`.wh-start[data-day="${day}"]`)].map(el => el.value);
+      const ends   = [...document.querySelectorAll(`.wh-end[data-day="${day}"]`)].map(el => el.value);
+      wh[day] = starts.map((s, i) => ({ start: s, end: ends[i] })).filter(sh => sh.start && sh.end);
+    }
+    return wh;
+  }
+
+  async function saveStaff() {
+    const errEl = document.getElementById('staff-modal-error');
+    errEl.classList.add('hidden');
+    const name = document.getElementById('staff-name').value.trim();
+    if (!name) { errEl.textContent = 'Full name is required.'; errEl.classList.remove('hidden'); return; }
+
+    const payload = {
+      full_name: name,
+      specialization: document.getElementById('staff-spec').value.trim() || null,
+      phone: document.getElementById('staff-phone').value.trim() || null,
+      email: document.getElementById('staff-email').value.trim() || null,
+      working_hours: collectWorkingHours(),
+    };
+
+    const staffId = document.getElementById('staff-id-field').value;
+    try {
+      if (staffId) {
+        await apiFetch(`/staff/${staffId}`, { method: 'PATCH', body: JSON.stringify(payload) });
+      } else {
+        await apiFetch('/staff', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      closeAllModals();
+      loadStaff();
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.classList.remove('hidden');
+    }
+  }
+
+  async function deactivateStaff(id, name) {
+    if (!confirm(`Deactivate ${name}? They will no longer appear in slot allocation or new bookings.`)) return;
+    try {
+      await apiFetch(`/staff/${id}`, { method: 'DELETE' });
+      loadStaff();
+    } catch (err) {
+      alert('Failed to deactivate: ' + err.message);
+    }
+  }
+
+  // ── Services (Rate Card) ──────────────────────────────────────────────────
+
+  let cachedServices = [];
+  let cachedStaff = [];
+
+  async function loadServices() {
+    document.getElementById('services-rate-card').innerHTML =
+      '<div class="text-slate-500 text-sm text-center py-12"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</div>';
+    try {
+      const [svcRes, staffRes] = await Promise.all([
+        apiFetch('/services'),
+        apiFetch('/staff'),
+      ]);
+      cachedServices = svcRes.data || [];
+      cachedStaff = staffRes.data || [];
+      renderRateCard(cachedServices, cachedStaff);
+      populateSlotSelects();
+    } catch (err) {
+      document.getElementById('services-rate-card').innerHTML =
+        `<p class="text-red-400 text-sm text-center py-8">${err.message}</p>`;
+    }
+  }
+
+  function renderRateCard(services, staff) {
+    const el = document.getElementById('services-rate-card');
+    if (!services.length) {
+      el.innerHTML = `
+        <div class="glass rounded-2xl p-10 text-center">
+          <i class="fa-solid fa-list-check text-slate-600 text-4xl mb-4"></i>
+          <p class="text-white font-medium mb-2">No services yet</p>
+          <p class="text-slate-500 text-sm mb-4">Add your first service to build the rate card</p>
+          <button onclick="openServiceModal()" class="btn-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">
+            <i class="fa-solid fa-plus mr-2"></i>Add First Service
+          </button>
+        </div>`;
+      return;
+    }
+
+    // Group by category
+    const grouped = {};
+    for (const svc of services) {
+      const cat = svc.category || 'General';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(svc);
+    }
+
+    const staffMap = Object.fromEntries(staff.map(s => [s.id, s]));
+
+    el.innerHTML = Object.entries(grouped).map(([category, svcs]) => `
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-white font-bold text-base">${escHtml(category)}</span>
+          <div class="flex-1 h-px" style="background:rgba(255,255,255,0.06)"></div>
+          <span class="text-slate-500 text-xs">${svcs.length} service${svcs.length > 1 ? 's' : ''}</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-2">
+          ${svcs.map(svc => renderServiceCard(svc, staffMap)).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderServiceCard(svc, staffMap) {
+    const price = (svc.price_paise / 100).toLocaleString('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 });
+    const assignedStaff = (svc.staff_ids || [])
+      .map(id => staffMap[id])
+      .filter(Boolean)
+      .map(s => `<span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(99,102,241,0.15);color:#a5b4fc">${escHtml(s.full_name.split(' ')[0])}</span>`)
+      .join('');
+
+    const durationLabel = svc.duration_minutes >= 60
+      ? `${Math.floor(svc.duration_minutes / 60)}h ${svc.duration_minutes % 60 > 0 ? (svc.duration_minutes % 60) + 'm' : ''}`
+      : `${svc.duration_minutes}m`;
+
+    return `
+      <div class="glass rounded-2xl p-5 hover:border-indigo-500/30 transition-all group" style="border-color:rgba(255,255,255,0.06)">
+        <div class="flex items-start justify-between mb-3">
+          <h4 class="text-white font-semibold text-sm leading-snug">${escHtml(svc.name)}</h4>
+          <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onclick="openServiceModal('${svc.id}')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-400 hover:bg-indigo-400/10 transition-all" title="Edit">
+              <i class="fa-solid fa-pen text-xs"></i>
+            </button>
+            <button onclick="deleteService('${svc.id}','${escHtml(svc.name)}')" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-all" title="Deactivate">
+              <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+          </div>
+        </div>
+        ${svc.description ? `<p class="text-slate-500 text-xs mb-3 leading-relaxed">${escHtml(svc.description)}</p>` : ''}
+        <div class="flex items-end justify-between mb-3">
+          <span class="text-2xl font-bold gradient-text">${price}</span>
+          <div class="text-right">
+            <span class="text-xs px-2.5 py-1 rounded-lg text-slate-300" style="background:rgba(255,255,255,0.06)">
+              <i class="fa-regular fa-clock mr-1 text-indigo-400"></i>${durationLabel}
+            </span>
+          </div>
+        </div>
+        ${assignedStaff
+          ? `<div class="flex flex-wrap gap-1.5 pt-3 border-t" style="border-color:rgba(255,255,255,0.05)">${assignedStaff}</div>`
+          : `<p class="text-slate-600 text-xs pt-3 border-t" style="border-color:rgba(255,255,255,0.05)">Any staff</p>`
+        }
+      </div>`;
+  }
+
+  async function openServiceModal(serviceId = null) {
+    // Ensure staff is loaded for checkboxes
+    if (!cachedStaff.length) {
+      try { const r = await apiFetch('/staff'); cachedStaff = r.data || []; } catch (_) {}
+    }
+
+    const errEl = document.getElementById('service-modal-error');
+    errEl.classList.add('hidden');
+    document.getElementById('service-modal-title').textContent = serviceId ? 'Edit Service' : 'Add Service';
+    document.getElementById('service-id-field').value = serviceId || '';
+
+    // Build staff checkboxes
+    const staffBox = document.getElementById('svc-staff-checkboxes');
+    staffBox.innerHTML = cachedStaff.map(s => `
+      <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl hover:bg-white/5 transition-all">
+        <input type="checkbox" class="svc-staff-cb accent-indigo-500" value="${s.id}" />
+        <span class="text-slate-300 text-sm">${escHtml(s.full_name)}</span>
+        ${s.specialization ? `<span class="text-slate-500 text-xs">(${escHtml(s.specialization)})</span>` : ''}
+      </label>
+    `).join('');
+
+    if (serviceId) {
+      // Pre-fill for edit
+      const svc = cachedServices.find(s => s.id === serviceId);
+      if (svc) {
+        document.getElementById('svc-name').value = svc.name;
+        document.getElementById('svc-category').value = svc.category || '';
+        document.getElementById('svc-price').value = svc.price_paise / 100;
+        document.getElementById('svc-duration').value = svc.duration_minutes;
+        document.getElementById('svc-buffer').value = svc.buffer_minutes;
+        document.getElementById('svc-description').value = svc.description || '';
+        (svc.staff_ids || []).forEach(id => {
+          const cb = staffBox.querySelector(`input[value="${id}"]`);
+          if (cb) cb.checked = true;
+        });
+      }
+    } else {
+      ['svc-name','svc-category','svc-price','svc-description'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('svc-duration').value = '30';
+      document.getElementById('svc-buffer').value = '10';
+    }
+
+    showModal('modal-service');
+  }
+
+  async function saveService() {
+    const errEl = document.getElementById('service-modal-error');
+    errEl.classList.add('hidden');
+
+    const name = document.getElementById('svc-name').value.trim();
+    const priceRaw = parseFloat(document.getElementById('svc-price').value);
+    if (!name) { errEl.textContent = 'Service name is required.'; errEl.classList.remove('hidden'); return; }
+    if (isNaN(priceRaw) || priceRaw < 0) { errEl.textContent = 'Enter a valid price (0 or more).'; errEl.classList.remove('hidden'); return; }
+
+    const staffIds = [...document.querySelectorAll('.svc-staff-cb:checked')].map(cb => cb.value);
+    const payload = {
+      name,
+      category: document.getElementById('svc-category').value.trim() || null,
+      price_rupees: priceRaw,
+      duration_minutes: parseInt(document.getElementById('svc-duration').value),
+      buffer_minutes: parseInt(document.getElementById('svc-buffer').value),
+      description: document.getElementById('svc-description').value.trim() || null,
+      staff_ids: staffIds,
+    };
+
+    const serviceId = document.getElementById('service-id-field').value;
+    try {
+      if (serviceId) {
+        await apiFetch(`/services/${serviceId}`, { method: 'PATCH', body: JSON.stringify(payload) });
+      } else {
+        await apiFetch('/services', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      closeAllModals();
+      loadServices();
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.classList.remove('hidden');
+    }
+  }
+
+  async function deleteService(id, name) {
+    if (!confirm(`Deactivate "${name}"? It will be removed from the rate card and will no longer be bookable.`)) return;
+    try {
+      await apiFetch(`/services/${id}`, { method: 'DELETE' });
+      loadServices();
+    } catch (err) {
+      alert('Failed to deactivate service: ' + err.message);
+    }
+  }
+
+  // ── Calendar ──────────────────────────────────────────────────────────────
+
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth(); // 0-indexed
+  let calAppointments = [];
+  let calSelectedDate = null;
+
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  async function loadCalendar() {
+    document.getElementById('cal-title').textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
+    document.getElementById('cal-grid').innerHTML = '<div class="col-span-7 text-center py-8 text-slate-500 text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</div>';
+
+    // Fetch appointments for the full month
+    const from = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
+    const lastDay = new Date(calYear, calMonth+1, 0).getDate();
+    const to = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+
+    try {
+      const res = await apiFetch(`/appointments?date_from=${from}&date_to=${to}&limit=200`);
+      calAppointments = res.items || [];
+    } catch (_) {
+      calAppointments = [];
+    }
+    renderCalendarGrid();
+    populateSlotSelects();
+  }
+
+  function calNav(dir) {
+    calMonth += dir;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    loadCalendar();
+  }
+
+  function renderCalendarGrid() {
+    document.getElementById('cal-title').textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
+    const grid = document.getElementById('cal-grid');
+
+    const firstDay = new Date(calYear, calMonth, 1);
+    // Monday-first: 0=Mon, 6=Sun
+    let startOffset = (firstDay.getDay() + 6) % 7;
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const today = new Date();
+
+    // Build appointment count map: "YYYY-MM-DD" → { confirmed:n, pending:n, cancelled:n }
+    const apptMap = {};
+    for (const a of calAppointments) {
+      const d = new Date(a.slot_datetime);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if (!apptMap[key]) apptMap[key] = { confirmed:0, pending:0, cancelled:0, completed:0 };
+      apptMap[key][a.status] = (apptMap[key][a.status] || 0) + 1;
+    }
+
+    let html = '';
+    // Empty cells before day 1
+    for (let i = 0; i < startOffset; i++) {
+      html += '<div class="h-20 rounded-xl" style="background:rgba(255,255,255,0.02)"></div>';
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateKey = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const isToday = today.getFullYear() === calYear && today.getMonth() === calMonth && today.getDate() === day;
+      const isSelected = calSelectedDate === dateKey;
+      const counts = apptMap[dateKey];
+
+      const dots = counts ? [
+        counts.confirmed > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>` : '',
+        counts.pending > 0   ? `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>` : '',
+        counts.cancelled > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-red-400 inline-block"></span>` : '',
+      ].filter(Boolean).join('') : '';
+
+      const totalCount = counts ? (counts.confirmed + counts.pending + counts.completed + counts.cancelled) : 0;
+
+      html += `
+        <div onclick="selectCalDay('${dateKey}')" class="h-20 rounded-xl p-2 cursor-pointer transition-all hover:bg-indigo-500/10 flex flex-col justify-between"
+             style="${isSelected ? 'background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.4)' : isToday ? 'background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2)' : 'border:1px solid rgba(255,255,255,0.04)'}">
+          <span class="text-sm font-medium ${isToday ? 'text-indigo-400 font-bold' : 'text-slate-300'}">${day}</span>
+          <div class="flex flex-col gap-1">
+            ${totalCount > 0 ? `<span class="text-xs text-slate-400">${totalCount} appt${totalCount>1?'s':''}</span>` : ''}
+            <div class="flex gap-0.5">${dots}</div>
+          </div>
+        </div>`;
+    }
+    grid.innerHTML = html;
+  }
+
+  function selectCalDay(dateKey) {
+    calSelectedDate = dateKey;
+    renderCalendarGrid(); // re-render to update selected highlight
+
+    // Format display date
+    const d = new Date(dateKey + 'T00:00:00');
+    const label = d.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    document.getElementById('cal-day-title').textContent = label;
+
+    // Filter appointments for this day
+    const dayAppts = calAppointments.filter(a => {
+      const ad = new Date(a.slot_datetime);
+      const key = `${ad.getFullYear()}-${String(ad.getMonth()+1).padStart(2,'0')}-${String(ad.getDate()).padStart(2,'0')}`;
+      return key === dateKey;
+    }).sort((a,b) => new Date(a.slot_datetime) - new Date(b.slot_datetime));
+
+    const container = document.getElementById('cal-day-appointments');
+    container.innerHTML = dayAppts.length
+      ? dayAppts.map(a => {
+          const t = new Date(a.slot_datetime).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' });
+          const statusClass = { confirmed:'status-confirmed', pending:'status-pending', cancelled:'status-cancelled', completed:'status-completed' }[a.status] || 'status-pending';
+          return `
+            <div class="flex items-center gap-3 p-3 rounded-xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05)">
+              <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                ${escHtml(a.patient_name.charAt(0).toUpperCase())}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-white text-sm font-medium truncate">${escHtml(a.patient_name)}</p>
+                <p class="text-slate-500 text-xs">${escHtml(a.patient_phone)} · ${t} IST</p>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium ${statusClass}">${a.status}</span>
+            </div>`;
+        }).join('')
+      : '<p class="text-slate-500 text-sm text-center py-6">No appointments on this day</p>';
+
+    // Auto-fill the slot checker date
+    document.getElementById('slot-date-input').value = dateKey;
+  }
+
+  async function populateSlotSelects() {
+    // Populate service and staff selects in the slot checker
+    const svcSel = document.getElementById('slot-service-select');
+    const staffSel = document.getElementById('slot-staff-select');
+    if (!svcSel || !staffSel) return;
+
+    if (!cachedServices.length) {
+      try { const r = await apiFetch('/services'); cachedServices = r.data || []; } catch (_) {}
+    }
+    if (!cachedStaff.length) {
+      try { const r = await apiFetch('/staff'); cachedStaff = r.data || []; } catch (_) {}
+    }
+
+    svcSel.innerHTML = '<option value="">Select service...</option>' +
+      cachedServices.map(s => `<option value="${s.id}">${escHtml(s.name)} (${s.duration_minutes}m)</option>`).join('');
+    staffSel.innerHTML = '<option value="">Any available staff</option>' +
+      cachedStaff.map(s => `<option value="${s.id}">${escHtml(s.full_name)}</option>`).join('');
+  }
+
+  async function checkSlots() {
+    const serviceId = document.getElementById('slot-service-select').value;
+    const staffId = document.getElementById('slot-staff-select').value;
+    const dateVal = document.getElementById('slot-date-input').value;
+    const resultEl = document.getElementById('slots-result');
+
+    if (!serviceId) { resultEl.innerHTML = '<p class="text-amber-400 text-sm">Please select a service.</p>'; return; }
+    if (!dateVal) { resultEl.innerHTML = '<p class="text-amber-400 text-sm">Please select a date.</p>'; return; }
+
+    resultEl.innerHTML = '<p class="text-slate-500 text-sm text-center py-4"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Checking availability...</p>';
+
+    try {
+      let url = `/slots?date=${dateVal}&service_id=${serviceId}`;
+      if (staffId) url += `&staff_id=${staffId}`;
+      const res = await apiFetch(url);
+      const data = res.data;
+
+      if (!data.staff_slots || !data.staff_slots.length) {
+        resultEl.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">No staff available on this date for this service.</p>';
+        return;
+      }
+
+      resultEl.innerHTML = data.staff_slots.map(ss => {
+        const availableSlots = ss.slots.filter(s => s.available);
+        const takenSlots = ss.slots.filter(s => !s.available);
+        return `
+          <div>
+            <p class="text-white font-medium text-sm mb-2">${escHtml(ss.staff_name)} <span class="text-slate-500 text-xs">${escHtml(ss.specialization || '')}</span></p>
+            ${!ss.slots.length ? '<p class="text-slate-500 text-xs">Not working on this date.</p>' : `
+            <div class="flex flex-wrap gap-1.5">
+              ${ss.slots.map(sl => `
+                <span class="text-xs px-2 py-1 rounded-lg font-mono ${sl.available
+                  ? 'text-emerald-300 cursor-default hover:bg-emerald-400/10 transition-all'
+                  : 'text-slate-600 line-through'}"
+                  style="${sl.available ? 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2)' : 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)'}">
+                  ${sl.start}
+                </span>`).join('')}
+            </div>
+            <p class="text-slate-600 text-xs mt-1.5">${availableSlots.length} available · ${takenSlots.length} taken</p>`}
+          </div>`;
+      }).join('<div class="border-t my-3" style="border-color:rgba(255,255,255,0.05)"></div>');
+    } catch (err) {
+      resultEl.innerHTML = `<p class="text-red-400 text-sm">${err.message}</p>`;
+    }
+  }
+
+  // ── Modal Helpers ─────────────────────────────────────────────────────────
+
+  function showModal(modalId) {
+    document.getElementById('modal-backdrop').classList.remove('hidden');
+    document.getElementById(modalId).classList.remove('hidden');
+  }
+
+  function closeAllModals(event) {
+    if (event && event.target !== document.getElementById('modal-backdrop')) return;
+    document.getElementById('modal-backdrop').classList.add('hidden');
+    ['modal-service','modal-staff'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  }
+
+  // ── Agent Setup ───────────────────────────────────────────────────────────
+
+  const GRAPH_TEMPLATES = {
+    full: {
+      name: "Full Booking Suite",
+      description: "Complete 7-agent pipeline: booking, reschedule, cancel, status, notifications, and escalation.",
+      definition: {
+        nodes: [
+          { id: "intent_classifier", type: "intent_classifier", config: { is_entry: true }, position: { x: 0, y: 0 } },
+          { id: "booking_agent", type: "booking_agent", config: {}, position: { x: 200, y: -120 } },
+          { id: "reschedule_agent", type: "reschedule_agent", config: {}, position: { x: 200, y: -40 } },
+          { id: "cancellation_agent", type: "cancellation_agent", config: {}, position: { x: 200, y: 40 } },
+          { id: "status_checker", type: "status_checker", config: {}, position: { x: 200, y: 120 } },
+          { id: "escalation_agent", type: "escalation_agent", config: {}, position: { x: 200, y: 200 } },
+          { id: "notification_agent", type: "notification_agent", config: {}, position: { x: 400, y: 0 } }
+        ],
+        edges: [
+          { id: "e1", source: "intent_classifier", target: "booking_agent", condition: "book" },
+          { id: "e2", source: "intent_classifier", target: "reschedule_agent", condition: "reschedule" },
+          { id: "e3", source: "intent_classifier", target: "cancellation_agent", condition: "cancel" },
+          { id: "e4", source: "intent_classifier", target: "status_checker", condition: "check" },
+          { id: "e5", source: "intent_classifier", target: "escalation_agent", condition: "other" },
+          { id: "e6", source: "booking_agent", target: "notification_agent", condition: null },
+          { id: "e7", source: "reschedule_agent", target: "notification_agent", condition: null },
+          { id: "e8", source: "cancellation_agent", target: "notification_agent", condition: null },
+          { id: "e9", source: "notification_agent", target: "__end__", condition: null },
+          { id: "e10", source: "status_checker", target: "__end__", condition: null },
+          { id: "e11", source: "escalation_agent", target: "__end__", condition: null }
+        ]
+      }
+    },
+    booking: {
+      name: "Booking Only",
+      description: "Minimal 3-agent setup: intent classification, booking, and notifications.",
+      definition: {
+        nodes: [
+          { id: "intent_classifier", type: "intent_classifier", config: { is_entry: true }, position: { x: 0, y: 0 } },
+          { id: "booking_agent", type: "booking_agent", config: {}, position: { x: 200, y: 0 } },
+          { id: "notification_agent", type: "notification_agent", config: {}, position: { x: 400, y: 0 } }
+        ],
+        edges: [
+          { id: "e1", source: "intent_classifier", target: "booking_agent", condition: "book" },
+          { id: "e2", source: "booking_agent", target: "notification_agent", condition: null },
+          { id: "e3", source: "notification_agent", target: "__end__", condition: null }
+        ]
+      }
+    },
+    info: {
+      name: "Info & Status",
+      description: "Read-only agent: lets users check appointment status and escalate.",
+      definition: {
+        nodes: [
+          { id: "intent_classifier", type: "intent_classifier", config: { is_entry: true }, position: { x: 0, y: 0 } },
+          { id: "status_checker", type: "status_checker", config: {}, position: { x: 200, y: -40 } },
+          { id: "escalation_agent", type: "escalation_agent", config: {}, position: { x: 200, y: 60 } }
+        ],
+        edges: [
+          { id: "e1", source: "intent_classifier", target: "status_checker", condition: "check" },
+          { id: "e2", source: "intent_classifier", target: "escalation_agent", condition: "other" },
+          { id: "e3", source: "status_checker", target: "__end__", condition: null },
+          { id: "e4", source: "escalation_agent", target: "__end__", condition: null }
+        ]
+      }
+    }
+  };
+
+  async function checkAndAutoConnectGraph() {
+    try {
+      const res = await apiFetch('/graphs');
+      const graphs = res.data || [];
+      const deployed = graphs.find(g => g.is_deployed);
+      if (deployed) {
+        currentGraphId = deployed.id;
+        currentGraphName = deployed.name;
+        updateChatBadge(true);
+      } else {
+        updateChatBadge(false);
+      }
+    } catch (_) {
+      // Non-blocking — graph setup is optional at login
+    }
+  }
+
+  function updateChatBadge(isLive) {
+    const badge = document.getElementById('nav-chat-badge');
+    const agentsBadge = document.getElementById('nav-agents-badge');
+    if (isLive) {
+      badge.textContent = 'Live';
+      badge.style.background = 'rgba(16,185,129,0.2)';
+      badge.style.color = '#34d399';
+      agentsBadge.classList.add('hidden');
+    } else {
+      badge.textContent = 'Setup';
+      badge.style.background = 'rgba(245,158,11,0.2)';
+      badge.style.color = '#fbbf24';
+      agentsBadge.classList.remove('hidden');
+    }
+  }
+
+  function updateChatBanner() {
+    const banner = document.getElementById('chat-graph-banner');
+    if (currentGraphId) {
+      banner.className = 'mx-6 mb-2 p-3 rounded-xl flex items-center gap-3 text-sm';
+      banner.style.cssText = 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25)';
+      banner.innerHTML = `
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span class="text-emerald-300 flex-1"><strong>${escHtml(currentGraphName || 'AI Agent')}</strong> is connected and ready</span>
+        <code class="text-slate-400 text-xs font-mono">${escHtml(currentGraphId.slice(0,8))}...</code>
+        <button onclick="document.getElementById('chat-graph-banner').classList.add('hidden')" class="text-slate-600 hover:text-slate-400 text-xs ml-1">✕</button>`;
+    } else {
+      banner.className = 'mx-6 mb-2 p-3 rounded-xl flex items-center gap-3 text-sm';
+      banner.style.cssText = 'background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25)';
+      banner.innerHTML = `
+        <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+        <span class="text-amber-300 flex-1">No AI agent activated yet. Set one up to enable live responses.</span>
+        <button onclick="showView('agents')" class="text-white text-xs font-semibold px-3 py-1.5 rounded-lg" style="background:rgba(245,158,11,0.3);border:1px solid rgba(245,158,11,0.4)">
+          <i class="fa-solid fa-bolt mr-1"></i>Setup Agent
+        </button>`;
+    }
+  }
+
+  function loadAgentsPage() {
+    const info = document.getElementById('active-agent-info');
+    const templates = document.getElementById('agent-templates');
+    const progress = document.getElementById('activation-progress');
+    progress.classList.add('hidden');
+
+    if (currentGraphId) {
+      info.classList.remove('hidden');
+      document.getElementById('active-agent-name').textContent = currentGraphName || 'AI Agent';
+      document.getElementById('active-agent-id').textContent = currentGraphId;
+      // Dim activate buttons
+      ['full','booking','info'].forEach(k => {
+        const btn = document.getElementById('btn-activate-' + k);
+        if (btn) { btn.disabled = true; btn.textContent = 'Already Active'; btn.style.opacity = '0.5'; }
+      });
+    } else {
+      info.classList.add('hidden');
+      ['full','booking','info'].forEach(k => {
+        const btn = document.getElementById('btn-activate-' + k);
+        if (btn) { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-bolt mr-2"></i>Activate ${GRAPH_TEMPLATES[k].name}`; btn.style.opacity = '1'; }
+      });
+    }
+  }
+
+  async function activateAgent(templateKey) {
+    const template = GRAPH_TEMPLATES[templateKey];
+    if (!template) return;
+
+    const progress = document.getElementById('activation-progress');
+    const errBox = document.getElementById('activation-error');
+    progress.classList.remove('hidden');
+    errBox.classList.add('hidden');
+
+    // Disable all buttons
+    ['full','booking','info'].forEach(k => {
+      const btn = document.getElementById('btn-activate-' + k);
+      if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+    });
+
+    const setStep = (stepId, state) => {
+      const el = document.getElementById(stepId);
+      if (!el) return;
+      const iconWrap = el.querySelector('.step-icon, div');
+      const icon = iconWrap ? iconWrap.querySelector('i') : null;
+      if (state === 'active') {
+        el.style.opacity = '1';
+        if (icon) icon.className = 'fa-solid fa-spinner fa-spin text-indigo-400 text-xs';
+      } else if (state === 'done') {
+        el.style.opacity = '1';
+        if (icon) icon.className = 'fa-solid fa-circle-check text-emerald-400 text-xs';
+      } else if (state === 'error') {
+        el.style.opacity = '1';
+        if (icon) icon.className = 'fa-solid fa-circle-xmark text-red-400 text-xs';
+      }
+    };
+
+    try {
+      // Step 1: Create graph with definition
+      setStep('step-create', 'active');
+      document.getElementById('step-deploy').style.opacity = '0.4';
+      document.getElementById('step-live').style.opacity = '0.4';
+
+      const createRes = await apiFetch('/graphs', {
+        method: 'POST',
+        body: JSON.stringify({ name: template.name, description: template.description, definition: template.definition }),
+      });
+      const graphId = createRes.data.id;
+      setStep('step-create', 'done');
+
+      // Step 2: Deploy version 1
+      setStep('step-deploy', 'active');
+      await apiFetch(`/graphs/${graphId}/deploy`, {
+        method: 'POST',
+        body: JSON.stringify({ version: 1 }),
+      });
+      setStep('step-deploy', 'done');
+
+      // Step 3: Live
+      setStep('step-live', 'done');
+      currentGraphId = graphId;
+      currentGraphName = template.name;
+      updateChatBadge(true);
+
+      // Show success and refresh agents page after short delay
+      setTimeout(() => {
+        progress.classList.add('hidden');
+        loadAgentsPage();
+      }, 1200);
+
+    } catch (err) {
+      // Mark whichever step was in progress as error
+      setStep('step-create', 'error');
+      setStep('step-deploy', 'error');
+      errBox.textContent = '⚠ Activation failed: ' + err.message;
+      errBox.classList.remove('hidden');
+      // Re-enable buttons
+      ['full','booking','info'].forEach(k => {
+        const btn = document.getElementById('btn-activate-' + k);
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      });
+    }
+  }
+
+  // ── Chat ──────────────────────────────────────────────────────────────────
+
+  async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+
+    appendMessage('user', text);
+
+    if (!currentGraphId) {
+      appendMessage('ai', "⚠️ No AI agent is activated yet. Go to Agent Setup in the sidebar to choose a template and activate your agent in one click.");
+      return;
+    }
+
+    appendTyping();
+
+    try {
+      const res = await apiFetch(`/chat/${currentGraphId}`, {
+        method: 'POST',
+        body: JSON.stringify({ message: text, session_id: sessionId, channel: 'webchat', sender_identifier: null }),
+      });
+      removeTyping();
+      appendMessage('ai', res.response || 'I processed your request.');
+    } catch (err) {
+      removeTyping();
+      appendMessage('ai', `I encountered an error: ${err.message}`);
+    }
+  }
+
+  function appendMessage(role, text) {
+    const wrap = document.getElementById('chat-messages');
+    const isUser = role === 'user';
+    const div = document.createElement('div');
+    div.className = `flex gap-3 items-end ${isUser ? 'flex-row-reverse' : ''} animate-fade-in`;
+    div.innerHTML = isUser
+      ? `<div class="chat-bubble-user p-4 max-w-md"><p class="text-white text-sm">${escHtml(text)}</p></div>`
+      : `<div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-robot text-white text-xs"></i></div>
+         <div class="chat-bubble-ai p-4 max-w-md"><p class="text-white text-sm">${escHtml(text)}</p></div>`;
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function appendTyping() {
+    const wrap = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.id = 'typing-indicator';
+    div.className = 'flex gap-3 items-end animate-fade-in';
+    div.innerHTML = `
+      <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center flex-shrink-0">
+        <i class="fa-solid fa-robot text-white text-xs"></i>
+      </div>
+      <div class="chat-bubble-ai p-4">
+        <div class="flex gap-1.5 items-center h-4">
+          <div class="w-2 h-2 bg-indigo-400 rounded-full typing-dot"></div>
+          <div class="w-2 h-2 bg-indigo-400 rounded-full typing-dot"></div>
+          <div class="w-2 h-2 bg-indigo-400 rounded-full typing-dot"></div>
+        </div>
+      </div>`;
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function removeTyping() {
+    document.getElementById('typing-indicator')?.remove();
+  }
+
+  function handleChatKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  function escHtml(str) {
+    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
