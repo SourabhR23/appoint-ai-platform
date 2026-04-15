@@ -7,7 +7,10 @@ All routes are versioned under v1. Adding v2 routes requires a new router file.
 
 from fastapi import APIRouter
 
-from backend.api import auth, appointments, tenants, graphs, chat, staff, health, services, slots
+from backend.api import (
+    auth, appointments, tenants, graphs, chat,
+    staff, health, services, slots, channels, webhooks,
+)
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -25,3 +28,7 @@ api_router.include_router(services.router)
 api_router.include_router(slots.router)
 api_router.include_router(graphs.router)
 api_router.include_router(chat.router)
+api_router.include_router(channels.router)
+
+# Inbound webhooks — no JWT, validated by Twilio signature
+api_router.include_router(webhooks.router)

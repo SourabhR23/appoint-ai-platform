@@ -276,7 +276,7 @@ Every graph change creates a new version row. Deploy any previous version in one
 |---|---|---|
 | **Phase 1** | Core backend, LangGraph agent pipeline, tenant portal (login, dashboard, appointments, AI chat, agent setup) | ✅ Complete |
 | **Phase 2** | Services rate card, staff CRUD + working hours editor, slot availability API, calendar with slot checker | ✅ Complete |
-| **Phase 3** | WhatsApp webhook, SMS webhook, voice/IVR, embeddable web chat widget, inbound channel routing | 🔲 Planned |
+| **Phase 3** | Channel Setup UI, Twilio inbound webhooks (SMS + WhatsApp), Gmail SMTP email, per-tenant credential store | ✅ Complete |
 | **Phase 4** | Public website, self-service onboarding wizard, login credential generation, Stripe checkout | 🔲 Planned |
 | **Phase 5** | Super admin portal — LLM usage tracking, per-tenant cost dashboard, revenue metrics | 🔲 Planned |
 

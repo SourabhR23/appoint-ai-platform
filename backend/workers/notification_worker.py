@@ -17,7 +17,7 @@ from celery import shared_task
 
 from backend.services.notification_templates import render_template
 from backend.services.twilio_service import send_sms, send_whatsapp
-from backend.services.sendgrid_service import send_email
+from backend.services.smtp_service import send_email
 
 logger = logging.getLogger(__name__)
 

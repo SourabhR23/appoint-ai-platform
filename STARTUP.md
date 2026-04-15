@@ -188,6 +188,7 @@ Click either card on the login screen — no password needed in dev mode (demo-t
 |---|---|---|
 | `65c5cd398923` | Initial schema — all 8 tables (tenants, staff, services, appointments, graphs, graph_versions, notification_logs, billing_events) | Phase 1 |
 | `a2f8e1c94b7d` | Add `category` and `staff_ids` columns to `services` table | Phase 2 |
+| `c3d9f2b05e8a` | Add `channel_configs` table — per-tenant SMS/WhatsApp/Email credentials | Phase 3 |
 
 ### Adding a New Migration
 
@@ -205,7 +206,7 @@ alembic upgrade head
 |---|---|---|
 | **Phase 1** | Core backend (auth, appointments, staff, graphs, chat), LangGraph agent pipeline, tenant portal frontend (login, dashboard, appointments, AI chat, agent setup with template activation) | ✅ Complete |
 | **Phase 2** | Services CRUD + rate card UI, staff add/edit/deactivate + working hours editor, slot availability API + calendar page with slot checker | ✅ Complete |
-| **Phase 3** | WhatsApp webhook, SMS webhook, voice/IVR, web chat widget embed, inbound channel routing (number → tenant) | 🔲 Not started |
+| **Phase 3** | Channel Setup UI (SMS/WhatsApp/Email configure per tenant), Twilio inbound webhooks, Gmail SMTP email, `channel_configs` table | ✅ Complete |
 | **Phase 4** | Public website, onboarding wizard (business type → agent template → services → hours → payment), login credential flashcard | 🔲 Not started |
 | **Phase 5** | Super admin portal (LLM usage, billing, tenant health), LLM token logging, Stripe metered billing | 🔲 Not started |
 
@@ -240,6 +241,11 @@ All routes are prefixed `/api/v1/`. All protected routes require `Authorization:
 | PUT | /graphs/{id} | JWT | Save new version |
 | POST | /graphs/{id}/deploy | JWT | Deploy version |
 | POST | /chat/{graph_id} | JWT | Send message through agent |
+| GET | /channels | JWT | List configured channels |
+| POST | /channels | JWT | Save channel credentials (validates before saving) |
+| DELETE | /channels/{type} | JWT | Deactivate a channel |
+| POST | /webhooks/twilio/sms | Public | Inbound SMS from Twilio |
+| POST | /webhooks/twilio/whatsapp | Public | Inbound WhatsApp from Twilio |
 
 ---
 

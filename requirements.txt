@@ -34,7 +34,7 @@ redis==5.0.4
 
 # Notifications
 twilio==9.1.1
-sendgrid==6.11.0
+# Email uses Python stdlib smtplib — no external package needed
 
 # Calendar
 google-auth==2.29.0

@@ -55,10 +55,12 @@ class Settings(BaseSettings):
     TWILIO_PHONE_FROM: str
     TWILIO_WHATSAPP_FROM: str
 
-    # ── SendGrid ─────────────────────────────────────────────────────────────
-    SENDGRID_API_KEY: str
-    SENDGRID_FROM_EMAIL: str
-    SENDGRID_FROM_NAME: str = "AppointAI"
+    # ── SMTP Email (Gmail) ────────────────────────────────────────────────────
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""           # Gmail address (platform default)
+    SMTP_PASSWORD: str = ""       # Gmail App Password (16 chars)
+    SMTP_FROM_NAME: str = "AppointAI"
 
     # ── Google Calendar ───────────────────────────────────────────────────────
     GOOGLE_CLIENT_ID: str = ""

@@ -13,6 +13,7 @@ from backend.models.appointment import Appointment
 from backend.models.graph import Graph, GraphVersion
 from backend.models.notification_log import NotificationLog
 from backend.models.billing_event import BillingEvent
+from backend.models.channel_config import ChannelConfig
 
 __all__ = [
     "Tenant",
@@ -24,4 +25,5 @@ __all__ = [
     "GraphVersion",
     "NotificationLog",
     "BillingEvent",
+    "ChannelConfig",
 ]

@@ -189,6 +189,9 @@
         <i class="fa-solid fa-diagram-project w-4"></i> Agent Setup
         <span id="nav-agents-badge" class="ml-auto text-xs px-2 py-0.5 rounded-full hidden" style="background:rgba(245,158,11,0.2);color:#fbbf24">Setup</span>
       </button>
+      <button onclick="showView('channels')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300" id="nav-channels">
+        <i class="fa-solid fa-plug w-4"></i> Channels
+      </button>
       <button onclick="showView('chat')" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300" id="nav-chat">
         <i class="fa-solid fa-comments w-4"></i> AI Chat Agent
         <span id="nav-chat-badge" class="ml-auto text-xs px-2 py-0.5 rounded-full" style="background:rgba(99,102,241,0.2);color:#818cf8">—</span>
@@ -622,6 +625,93 @@
       </div>
     </div>
 
+    <!-- ── CHANNELS ── -->
+    <div id="page-channels" class="hidden p-8 animate-slide-up">
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+        <!-- SMS Card -->
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(16,185,129,0.15)">
+              <i class="fa-solid fa-mobile-screen text-emerald-400"></i>
+            </div>
+            <div>
+              <div class="text-white font-semibold">SMS</div>
+              <div id="sms-status" class="text-xs text-slate-400">Not configured</div>
+            </div>
+          </div>
+          <p class="text-slate-400 text-sm mb-4">Receive and reply to booking requests via SMS. Requires Twilio account.</p>
+          <button onclick="openChannelModal('sms')" class="w-full py-2 rounded-xl text-sm font-semibold text-white" style="background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.3)">
+            <i class="fa-solid fa-gear mr-2"></i>Configure
+          </button>
+        </div>
+
+        <!-- WhatsApp Card -->
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(37,211,102,0.15)">
+              <i class="fa-brands fa-whatsapp" style="color:#25d366;font-size:1.2rem"></i>
+            </div>
+            <div>
+              <div class="text-white font-semibold">WhatsApp</div>
+              <div id="whatsapp-status" class="text-xs text-slate-400">Not configured</div>
+            </div>
+          </div>
+          <p class="text-slate-400 text-sm mb-4">Handle bookings over WhatsApp. Uses your Twilio WhatsApp-enabled number.</p>
+          <button onclick="openChannelModal('whatsapp')" class="w-full py-2 rounded-xl text-sm font-semibold text-white" style="background:rgba(37,211,102,0.2);border:1px solid rgba(37,211,102,0.3)">
+            <i class="fa-solid fa-gear mr-2"></i>Configure
+          </button>
+        </div>
+
+        <!-- Email Card -->
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(99,102,241,0.15)">
+              <i class="fa-solid fa-envelope text-indigo-400"></i>
+            </div>
+            <div>
+              <div class="text-white font-semibold">Email</div>
+              <div id="email-status" class="text-xs text-slate-400">Not configured</div>
+            </div>
+          </div>
+          <p class="text-slate-400 text-sm mb-4">Send booking confirmations and reminders via Gmail SMTP. Free, no API key needed.</p>
+          <button onclick="openChannelModal('email')" class="w-full py-2 rounded-xl text-sm font-semibold text-white" style="background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.3)">
+            <i class="fa-solid fa-gear mr-2"></i>Configure
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Setup guide link -->
+      <div class="glass-card rounded-2xl p-5 flex items-start gap-4">
+        <i class="fa-solid fa-circle-info text-indigo-400 mt-0.5"></i>
+        <div>
+          <div class="text-white font-medium mb-1">How to get credentials</div>
+          <p class="text-slate-400 text-sm">SMS &amp; WhatsApp: create a free <a href="https://www.twilio.com" target="_blank" class="text-indigo-400 underline">Twilio account</a> → buy a number → copy Account SID + Auth Token.<br>
+          Email: enable 2-Step Verification in Gmail → Security → App Passwords → generate 16-char password.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Channel Config Modal -->
+    <div id="modal-channel" class="fixed inset-0 z-50 hidden flex items-center justify-center" onclick="closeAllModals(event)">
+      <div class="modal-card rounded-2xl p-8 w-full max-w-md mx-4" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between mb-6">
+          <h3 id="channel-modal-title" class="text-white font-bold text-lg">Configure Channel</h3>
+          <button onclick="closeAllModals()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div id="channel-modal-fields" class="space-y-4"></div>
+        <div class="flex gap-3 mt-6">
+          <button onclick="closeAllModals()" class="flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-300 border border-slate-700 hover:border-slate-500">Cancel</button>
+          <button onclick="saveChannelConfig()" id="channel-save-btn" class="flex-1 btn-primary text-white py-2.5 rounded-xl text-sm font-semibold">
+            <i class="fa-solid fa-check mr-2"></i>Save & Verify
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── CHAT ── -->
     <div id="page-chat" class="hidden flex flex-col h-screen animate-fade-in" style="height:calc(100vh - 64px)">
       <div class="flex-1 overflow-y-auto p-6 space-y-4" id="chat-messages">
@@ -873,7 +963,7 @@
 
   // ── Views ─────────────────────────────────────────────────────────────────
 
-  const pages = { dashboard: 'page-dashboard', appointments: 'page-appointments', staff: 'page-staff', services: 'page-services', calendar: 'page-calendar', agents: 'page-agents', chat: 'page-chat' };
+  const pages = { dashboard: 'page-dashboard', appointments: 'page-appointments', staff: 'page-staff', services: 'page-services', calendar: 'page-calendar', agents: 'page-agents', channels: 'page-channels', chat: 'page-chat' };
   const titles = {
     dashboard: ['Dashboard', 'Overview of your appointment activity'],
     appointments: ['Appointments', 'Manage all bookings'],
@@ -881,6 +971,7 @@
     services: ['Services & Rate Card', 'Manage services, pricing and assigned staff'],
     calendar: ['Calendar', 'Booking schedule, slot availability and cancellations'],
     agents: ['Agent Setup', 'Choose and activate your AI agent configuration'],
+    channels: ['Channels', 'Connect SMS, WhatsApp and Email to your booking agent'],
     chat: ['AI Chat Agent', 'Talk to your virtual receptionist'],
   };
 
@@ -899,6 +990,7 @@
     if (name === 'services') loadServices();
     if (name === 'calendar') loadCalendar();
     if (name === 'agents') loadAgentsPage();
+    if (name === 'channels') loadChannelsPage();
     if (name === 'chat') updateChatBanner();
   }
 
@@ -1781,6 +1873,104 @@
         const btn = document.getElementById('btn-activate-' + k);
         if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
       });
+    }
+  }
+
+  // ── Channels ──────────────────────────────────────────────────────────────
+
+  let _currentChannelType = null;
+
+  async function loadChannelsPage() {
+    try {
+      const res = await apiFetch('/channels');
+      const data = res.data;
+      ['sms', 'whatsapp', 'email'].forEach(ch => {
+        const el = document.getElementById(`${ch}-status`);
+        if (!el) return;
+        const cfg = data[ch];
+        if (cfg && cfg.is_active) {
+          el.textContent = cfg.is_verified ? 'Active ✓' : 'Saved (unverified)';
+          el.style.color = cfg.is_verified ? '#34d399' : '#fbbf24';
+        } else {
+          el.textContent = 'Not configured';
+          el.style.color = '';
+        }
+      });
+    } catch (_) {}
+  }
+
+  function openChannelModal(chType) {
+    _currentChannelType = chType;
+    const titles = { sms: 'Configure SMS (Twilio)', whatsapp: 'Configure WhatsApp (Twilio)', email: 'Configure Email (Gmail SMTP)' };
+    document.getElementById('channel-modal-title').textContent = titles[chType];
+
+    let fields = '';
+    if (chType === 'sms' || chType === 'whatsapp') {
+      fields = `
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Twilio Account SID</label>
+          <input id="ch-account-sid" type="text" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="input-field w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Twilio Auth Token</label>
+          <input id="ch-auth-token" type="password" placeholder="Your auth token" class="input-field w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">${chType === 'whatsapp' ? 'WhatsApp' : 'SMS'} Phone Number (E.164)</label>
+          <input id="ch-phone" type="text" placeholder="+1234567890" class="input-field w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500">
+        </div>`;
+    } else {
+      fields = `
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Gmail Address</label>
+          <input id="ch-smtp-user" type="email" placeholder="yourname@gmail.com" class="input-field w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Gmail App Password (16 chars)</label>
+          <input id="ch-smtp-password" type="password" placeholder="xxxx xxxx xxxx xxxx" class="input-field w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Display Name</label>
+          <input id="ch-from-name" type="text" value="AppointAI" class="input-field w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500">
+        </div>
+        <p class="text-xs text-slate-500">Gmail → Security → 2-Step Verification → App Passwords → generate password</p>`;
+    }
+
+    document.getElementById('channel-modal-fields').innerHTML = fields;
+    document.getElementById('modal-channel').classList.remove('hidden');
+  }
+
+  async function saveChannelConfig() {
+    const btn = document.getElementById('channel-save-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Verifying...';
+
+    let credentials = {};
+    const ch = _currentChannelType;
+
+    if (ch === 'sms' || ch === 'whatsapp') {
+      credentials = {
+        account_sid: document.getElementById('ch-account-sid').value.trim(),
+        auth_token: document.getElementById('ch-auth-token').value.trim(),
+        phone_number: document.getElementById('ch-phone').value.trim(),
+      };
+    } else {
+      credentials = {
+        smtp_user: document.getElementById('ch-smtp-user').value.trim(),
+        smtp_password: document.getElementById('ch-smtp-password').value.trim(),
+        from_name: document.getElementById('ch-from-name').value.trim() || 'AppointAI',
+      };
+    }
+
+    try {
+      await apiFetch('/channels', { method: 'POST', body: JSON.stringify({ channel_type: ch, credentials }) });
+      closeAllModals();
+      loadChannelsPage();
+    } catch (err) {
+      alert('Failed to save channel: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i>Save & Verify';
     }
   }
 
