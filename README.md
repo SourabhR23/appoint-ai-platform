@@ -231,7 +231,8 @@ Each tenant deploys an **agent graph** — a directed state machine where nodes 
 
 | Agent | Role | LLM Call |
 |---|---|---|
-| `intent_classifier` | Classify incoming message into: book / reschedule / cancel / check / other | Yes |
+| `intent_classifier` | Classify incoming message into: book / reschedule / cancel / check / list_services / list_staff / check_slots / other | Yes |
+| `info_agent` | Service catalogue, staff roster, slot availability — direct DB queries | **No** (0 tokens) |
 | `booking_agent` | Extract service + datetime, check slot availability, create appointment | Yes |
 | `reschedule_agent` | Identify existing appointment, validate new slot, update | Yes |
 | `cancellation_agent` | Soft-cancel appointment, log reason | Yes |
@@ -244,8 +245,8 @@ Each tenant deploys an **agent graph** — a directed state machine where nodes 
 | Template | Agents | Use Case |
 |---|---|---|
 | **Full Booking Suite** | All 7 agents | Clinics, salons — full lifecycle |
-| **Booking Only** | Classifier + Booking + Notify | Simple single-service businesses |
-| **Info & Status** | Classifier + Status + Escalation | Read-only — let customers check bookings |
+| **Booking Only** | Classifier + Info + Booking + Notify | Service/staff/slot info + bookings |
+| **Info & Status** | Classifier + Info + Status + Escalation | Read-only — catalogue + appointment lookup |
 
 ### Graph Versioning
 

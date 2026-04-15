@@ -208,6 +208,7 @@ alembic upgrade head
 | **Phase 2** | Services CRUD + rate card UI, staff add/edit/deactivate + working hours editor, slot availability API + calendar page with slot checker | ✅ Complete |
 | **Phase 3** | Channel Setup UI (SMS/WhatsApp/Email configure per tenant), Twilio inbound webhooks, Gmail SMTP email, `channel_configs` table | ✅ Complete |
 | **Bug fixes** | 6 agent pipeline bugs resolved: contextvars db injection, graph cache, conditional edge routing, EXTRACTION_PROMPT KeyError, service name lookup, exc_info logging | ✅ Complete |
+| **InfoAgent** | Zero-LLM info queries: list_services, list_staff, check_slots — all handled via direct DB queries. New intents added to classifier. All templates updated. patch_graphs script for existing deployments. | ✅ Complete |
 | **Phase 4** | Public website, onboarding wizard (business type → agent template → services → hours → payment), login credential flashcard | 🔲 Not started |
 | **Phase 5** | Super admin portal (LLM usage, billing, tenant health), LLM token logging, Stripe metered billing | 🔲 Not started |
 
