@@ -202,7 +202,9 @@ Response envelope: `{ "success": bool, "data": any, "error": string | null }`
 | Method | Route | Description |
 |---|---|---|
 | `GET` | `/health` | Service health check |
-| `POST` | `/auth/register` | Create tenant account |
+| `POST` | `/auth/register` | Create tenant account (returns JWT) |
+| `POST` | `/auth/login` | Email + password login (returns JWT) |
+| `POST` | `/auth/admin/login` | Platform admin login (admin JWT) |
 | `GET` | `/auth/me` | Current tenant profile |
 | `GET` | `/appointments` | List appointments (paginated + filtered) |
 | `POST` | `/appointments` | Manual booking |
@@ -278,8 +280,8 @@ Every graph change creates a new version row. Deploy any previous version in one
 | **Phase 1** | Core backend, LangGraph agent pipeline, tenant portal (login, dashboard, appointments, AI chat, agent setup) | ✅ Complete |
 | **Phase 2** | Services rate card, staff CRUD + working hours editor, slot availability API, calendar with slot checker | ✅ Complete |
 | **Phase 3** | Channel Setup UI, Twilio inbound webhooks (SMS + WhatsApp), Gmail SMTP email, per-tenant credential store | ✅ Complete |
-| **Phase 4** | Public website, self-service onboarding wizard, login credential generation, Stripe checkout | 🔲 Planned |
-| **Phase 5** | Super admin portal — LLM usage tracking, per-tenant cost dashboard, revenue metrics | 🔲 Planned |
+| **Phase 4** | Public marketing landing page, credential login/signup (bcrypt + JWT), 3-step onboarding wizard, super admin portal placeholder | ✅ Complete |
+| **Phase 5** | Super admin portal — LLM usage tracking, per-tenant cost dashboard, revenue metrics, Stripe billing | 🔲 Planned |
 
 ---
 
@@ -287,12 +289,13 @@ Every graph change creates a new version row. Deploy any previous version in one
 
 Two demo tenants are seeded out of the box:
 
-| Tenant | Subdomain | Type | Highlights |
+| Tenant | Subdomain | Type | Login |
 |---|---|---|---|
-| MedCare Clinic | `medcare` | Medical | Dual OPD sessions (morning + evening), 3 doctors, 7 services |
-| Gloss & Glow Salon | `glossglow` | Beauty Salon | 4 categories (Hair, Skin, Nails, Bridal), 3 stylists, 14 services |
+| MedCare Clinic | `medcare` | Medical | Demo button (no password) |
+| Gloss & Glow Salon | `glossglow` | Beauty Salon | Demo button (no password) |
+| FitLife Coaching | `fitlife` | Coaching | `coach@fitlife.example` / `demo@123` |
 
-After running `python scripts/seed_loader.py`, visit http://localhost:8000 and click either tenant card to log in — no password needed in development mode.
+After running `python scripts/seed_loader.py`, visit http://localhost:8000. The landing page loads. Use demo cards or sign in with FitLife credentials. Click **Get Started Free** to test the signup wizard.
 
 ---
 

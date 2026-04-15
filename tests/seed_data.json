@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Synthetic seed data for 2 tenants: medical clinic + beauty salon",
     "note": "phone/email fields are placeholders — replace with real values for notification testing",
     "generated_at": "2026-04-10T00:00:00Z"
@@ -66,6 +66,37 @@
         "slot_buffer_minutes": 5,
         "cancellation_hours": 1,
         "sections": ["Hair", "Skin & Facial", "Nails", "Bridal"],
+        "notification_templates": {}
+      }
+    },
+    {
+      "id": "33333333-0000-0000-0000-000000000003",
+      "name": "FitLife Coaching",
+      "business_type": "coaching",
+      "subdomain": "fitlife",
+      "email": "coach@fitlife.example",
+      "phone": "+910000000003",
+      "timezone": "Asia/Kolkata",
+      "country": "IN",
+      "plan": "trial",
+      "is_active": true,
+      "onboarding_completed": false,
+      "password": "demo@123",
+      "config": {
+        "business_hours": {
+          "monday":    [{"start": "09:00", "end": "18:00"}],
+          "tuesday":   [{"start": "09:00", "end": "18:00"}],
+          "wednesday": [{"start": "09:00", "end": "18:00"}],
+          "thursday":  [{"start": "09:00", "end": "18:00"}],
+          "friday":    [{"start": "09:00", "end": "18:00"}],
+          "saturday":  [],
+          "sunday":    []
+        },
+        "booking_window_min_hours": 24,
+        "booking_window_max_days": 60,
+        "allow_same_day": false,
+        "slot_buffer_minutes": 15,
+        "cancellation_hours": 24,
         "notification_templates": {}
       }
     }

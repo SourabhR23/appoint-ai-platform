@@ -61,6 +61,7 @@ class Tenant(Base, TimestampMixin):
     onboarding_completed: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False
     )
+    hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Relationships (back-reference only — FK is on the child table)
     # Declared here for convenience in queries; lazy="select" avoids N+1

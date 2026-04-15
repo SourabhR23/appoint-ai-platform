@@ -171,14 +171,18 @@ docker-compose down
 
 ## Demo Login
 
-Once the backend is running and seed data is loaded, open http://localhost:8000 and log in with either demo tenant:
+Once the backend is running and seed data is loaded, open http://localhost:8000. The landing page appears. Login options:
 
-| Tenant | Subdomain | Business Type |
+| Tenant | Access Method | Credentials |
 |---|---|---|
-| MedCare Clinic | `medcare` | Medical clinic, dual OPD sessions |
-| Gloss & Glow Salon | `glossglow` | Beauty salon, 4 service categories |
+| MedCare Clinic | Demo button (no password) | Click "MedCare" card or demo button |
+| Gloss & Glow Salon | Demo button (no password) | Click "Gloss & Glow" card or demo button |
+| FitLife Coaching | Credential login | `coach@fitlife.example` / `demo@123` |
+| Platform Admin | Admin login page | `admin@appointai.in` / `Admin@123` |
 
-Click either card on the login screen — no password needed in dev mode (demo-token endpoint issues a JWT automatically).
+Click **Sign In** in the navbar → enter credentials, or click any demo card on the landing page.
+
+To create a new tenant account, click **Get Started Free** → complete the 3-step signup wizard.
 
 ---
 
@@ -189,6 +193,7 @@ Click either card on the login screen — no password needed in dev mode (demo-t
 | `65c5cd398923` | Initial schema — all 8 tables (tenants, staff, services, appointments, graphs, graph_versions, notification_logs, billing_events) | Phase 1 |
 | `a2f8e1c94b7d` | Add `category` and `staff_ids` columns to `services` table | Phase 2 |
 | `c3d9f2b05e8a` | Add `channel_configs` table — per-tenant SMS/WhatsApp/Email credentials | Phase 3 |
+| `d4e8f1a2b3c9` | Add `hashed_password` column to `tenants` table — enables credential-based login | Phase 4 |
 
 ### Adding a New Migration
 
@@ -209,19 +214,21 @@ alembic upgrade head
 | **Phase 3** | Channel Setup UI (SMS/WhatsApp/Email configure per tenant), Twilio inbound webhooks, Gmail SMTP email, `channel_configs` table | ✅ Complete |
 | **Bug fixes** | 6 agent pipeline bugs resolved: contextvars db injection, graph cache, conditional edge routing, EXTRACTION_PROMPT KeyError, service name lookup, exc_info logging | ✅ Complete |
 | **InfoAgent** | Zero-LLM info queries: list_services, list_staff, check_slots — all handled via direct DB queries. New intents added to classifier. All templates updated. patch_graphs script for existing deployments. | ✅ Complete |
-| **Phase 4** | Public website, onboarding wizard (business type → agent template → services → hours → payment), login credential flashcard | 🔲 Not started |
+| **Phase 4** | Public marketing landing page, credential-based login/signup, 3-step onboarding wizard (business info → password → agent template), super admin portal placeholder, FitLife demo tenant (coach@fitlife.example / demo@123) | ✅ Complete |
 | **Phase 5** | Super admin portal (LLM usage, billing, tenant health), LLM token logging, Stripe metered billing | 🔲 Not started |
 
 ---
 
-## API Endpoints (Current — Phase 2)
+## API Endpoints (Current — Phase 4)
 
 All routes are prefixed `/api/v1/`. All protected routes require `Authorization: Bearer <token>`.
 
 | Method | Route | Auth | Description |
 |---|---|---|---|
 | GET | /health | Public | Service health check |
-| POST | /auth/register | Public | Create tenant account |
+| POST | /auth/register | Public | Create tenant account (returns JWT) |
+| POST | /auth/login | Public | Email + password login (returns JWT) |
+| POST | /auth/admin/login | Public | Platform admin login (returns admin JWT) |
 | GET | /auth/me | JWT | Current tenant profile |
 | GET | /auth/demo-token?subdomain= | Dev only | Issue demo JWT |
 | GET | /appointments | JWT | List appointments (paginated, filtered) |
@@ -277,7 +284,7 @@ AI_Appointment_Agent_Platform/
 ├── scripts/
 │   └── seed_loader.py       # Loads tests/seed_data.json into DB
 ├── tests/
-│   └── seed_data.json       # Demo data for 2 tenants
+│   └── seed_data.json       # Demo data for 3 tenants (v1.1.0)
 ├── docs/                    # Architecture, PRD, BRD, Master Guide
 ├── .env                     # Real secrets — never commit
 ├── .env.example             # Template — commit this
@@ -314,4 +321,4 @@ AI_Appointment_Agent_Platform/
 
 ---
 
-*Last updated: Phase 2 complete — April 2026*
+*Last updated: Phase 4 complete — April 2026*

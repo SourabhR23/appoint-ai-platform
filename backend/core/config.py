@@ -90,6 +90,10 @@ class Settings(BaseSettings):
     TRIAL_DAYS: int = 14
     TRIAL_MAX_EXECUTIONS: int = 100
 
+    # ── Admin (Platform Super Admin) ──────────────────────────────────────────────
+    ADMIN_EMAIL: str = "admin@appointai.in"
+    ADMIN_PASSWORD_HASH: str = ""  # bcrypt hash of admin password; set in .env
+
     @field_validator("SECRET_KEY")
     @classmethod
     def secret_key_min_length(cls, v: str) -> str:

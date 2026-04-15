@@ -28,11 +28,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from sqlalchemy import select
 
+import bcrypt
+
 from backend.core.database import AsyncSessionLocal
 from backend.models.tenant import Tenant
 from backend.models.staff import Staff
 from backend.models.service import Service
 from backend.models.appointment import Appointment
+
+
+def _hash_password(plain: str) -> str:
+    pwd_bytes = plain.encode("utf-8")[:72]
+    return bcrypt.hashpw(pwd_bytes, bcrypt.gensalt()).decode("utf-8")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -77,6 +84,10 @@ async def load_tenants(session, records: list[dict]) -> int:
             logger.info(f"  SKIP  tenant '{r['name']}' — already exists")
             continue
 
+        hashed_password = None
+        if r.get("password"):
+            hashed_password = _hash_password(r["password"])
+
         tenant = Tenant(
             id=pk,
             name=r["name"],
@@ -90,6 +101,7 @@ async def load_tenants(session, records: list[dict]) -> int:
             plan=r.get("plan", "trial"),
             is_active=r.get("is_active", True),
             onboarding_completed=r.get("onboarding_completed", False),
+            hashed_password=hashed_password,
         )
         session.add(tenant)
         count += 1

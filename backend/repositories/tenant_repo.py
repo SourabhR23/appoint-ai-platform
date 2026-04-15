@@ -45,6 +45,7 @@ async def create_tenant(
     db: AsyncSession,
     data: TenantCreate,
     trial_ends_at,
+    hashed_password: str,
 ) -> Tenant:
     """
     Creates a new tenant with default config.
@@ -81,6 +82,7 @@ async def create_tenant(
         trial_ends_at=trial_ends_at,
         is_active=True,
         onboarding_completed=False,
+        hashed_password=hashed_password,
     )
     db.add(tenant)
     logger.info(

@@ -29,6 +29,7 @@ class TenantCreate(BaseModel):
     email: EmailStr
     phone: str = Field(..., min_length=10, max_length=15)
     timezone: str = Field(default="Asia/Kolkata")
+    password: str = Field(..., min_length=8, description="Account password")
 
     @field_validator("phone")
     @classmethod
@@ -69,3 +70,19 @@ class TenantResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class AdminLoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    tenant: TenantResponse

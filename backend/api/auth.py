@@ -2,20 +2,19 @@
 api/auth.py
 
 Tenant registration + login endpoints.
-Auth tokens are issued by Supabase — this API handles the platform-side
-tenant record creation that must happen alongside Supabase user creation.
 
-POST /api/v1/auth/register      — create Supabase user + Tenant row
-POST /api/v1/auth/login         — proxy to Supabase (or handled client-side)
+POST /api/v1/auth/register      — create tenant with hashed password → JWT
+POST /api/v1/auth/login         — email + password → JWT
+POST /api/v1/auth/admin/login   — platform admin login → admin JWT
 GET  /api/v1/auth/me            — return current tenant profile
-GET  /api/v1/auth/demo-token    — DEV ONLY: issue a signed JWT for demo/testing
+GET  /api/v1/auth/demo-token    — DEV ONLY: issue signed JWT for demo/testing
 """
 
 import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 
-import httpx
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,113 +28,127 @@ from backend.repositories.tenant_repo import (
     get_tenant_by_subdomain,
 )
 from backend.schemas.common import APIResponse
-from backend.schemas.tenant import TenantCreate, TenantResponse
+from backend.schemas.tenant import (
+    AdminLoginRequest,
+    LoginRequest,
+    TenantCreate,
+    TenantResponse,
+    TokenResponse,
+)
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 logger = logging.getLogger(__name__)
 
-
-@router.post(
-    "/register",
-    response_model=APIResponse[TenantResponse],
-    status_code=status.HTTP_201_CREATED,
-)
-async def register_tenant(
-    data: TenantCreate,
-    db: AsyncSession = Depends(get_db),
-) -> APIResponse[TenantResponse]:
-    """
-    Step 1: Business registration.
-
-    1. Validate subdomain + email uniqueness.
-    2. Create the Supabase Auth user (email/password handled client-side via Supabase SDK).
-    3. Create the Tenant row in our DB.
-    4. Return tenant profile.
-
-    Note: Supabase SDK is used client-side for password management.
-    This endpoint only handles the platform-side tenant record.
-    """
-    # Check uniqueness
-    existing_subdomain = await get_tenant_by_subdomain(db, data.subdomain)
-    if existing_subdomain:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Subdomain '{data.subdomain}' is already taken.",
-        )
-
-    existing_email = await get_tenant_by_email(db, data.email)
-    if existing_email:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="An account with this email already exists.",
-        )
-
-    trial_ends_at = datetime.now(timezone.utc) + timedelta(days=settings.TRIAL_DAYS)
-    tenant = await create_tenant(db, data, trial_ends_at)
-
-    logger.info(
-        "tenant_registered",
-        extra={"tenant_id": str(tenant.id), "subdomain": data.subdomain},
-    )
-
-    return APIResponse.ok(TenantResponse.model_validate(tenant))
+def _hash_password(plain: str) -> str:
+    # bcrypt truncates at 72 bytes — enforce explicitly for deterministic behavior.
+    pwd_bytes = plain.encode("utf-8")[:72]
+    return bcrypt.hashpw(pwd_bytes, bcrypt.gensalt()).decode("utf-8")
 
 
-@router.get(
-    "/me",
-    response_model=APIResponse[TenantResponse],
-)
-async def get_current_tenant_profile(
-    tenant: Tenant = Depends(get_current_tenant),
-) -> APIResponse[TenantResponse]:
-    """Returns the authenticated tenant's profile."""
-    return APIResponse.ok(TenantResponse.model_validate(tenant))
+def _verify_password(plain: str, hashed: str) -> bool:
+    try:
+        pwd_bytes = plain.encode("utf-8")[:72]
+        return bcrypt.checkpw(pwd_bytes, hashed.encode("utf-8"))
+    except (ValueError, TypeError):
+        return False
 
 
-@router.get(
-    "/demo-token",
-    response_model=APIResponse[dict],
-)
-async def get_demo_token(
-    subdomain: str,
-    db: AsyncSession = Depends(get_db),
-) -> APIResponse[dict]:
-    """
-    DEV ONLY — issues a signed JWT for a seeded demo tenant.
-    Blocked in production. Used by the demo frontend to skip Supabase setup.
-
-    Usage: GET /api/v1/auth/demo-token?subdomain=medcare
-    """
-    if settings.is_production:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Demo tokens are not available in production.",
-        )
-
-    tenant = await get_tenant_by_subdomain(db, subdomain)
-    if not tenant:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Tenant '{subdomain}' not found.",
-        )
-
+def _issue_tenant_token(tenant: Tenant) -> str:
     from jose import jwt as jose_jwt
-
     payload = {
-        "sub": str(uuid.uuid4()),        # fake user_id — demo only
+        "sub": str(uuid.uuid4()),
         "tenant_id": str(tenant.id),
         "email": tenant.email,
         "role": "admin",
         "iat": datetime.now(timezone.utc),
         "exp": datetime.now(timezone.utc) + timedelta(hours=24),
     }
+    return jose_jwt.encode(payload, settings.SUPABASE_JWT_SECRET, algorithm="HS256")
 
-    token = jose_jwt.encode(
-        payload,
-        settings.SUPABASE_JWT_SECRET,
-        algorithm="HS256",
-    )
 
+def _issue_admin_token(email: str) -> str:
+    from jose import jwt as jose_jwt
+    payload = {
+        "sub": "platform_admin",
+        "email": email,
+        "role": "super_admin",
+        "iat": datetime.now(timezone.utc),
+        "exp": datetime.now(timezone.utc) + timedelta(hours=8),
+    }
+    return jose_jwt.encode(payload, settings.SUPABASE_JWT_SECRET, algorithm="HS256")
+
+
+@router.post("/register", response_model=APIResponse[TokenResponse], status_code=status.HTTP_201_CREATED)
+async def register_tenant(data: TenantCreate, db: AsyncSession = Depends(get_db)):
+    if await get_tenant_by_subdomain(db, data.subdomain):
+        raise HTTPException(status.HTTP_409_CONFLICT, f"Subdomain '{data.subdomain}' is already taken.")
+    if await get_tenant_by_email(db, data.email):
+        raise HTTPException(status.HTTP_409_CONFLICT, "An account with this email already exists.")
+
+    hashed = _hash_password(data.password)
+    trial_ends_at = datetime.now(timezone.utc) + timedelta(days=settings.TRIAL_DAYS)
+    tenant = await create_tenant(db, data, trial_ends_at, hashed)
+    await db.commit()
+    await db.refresh(tenant)
+
+    token = _issue_tenant_token(tenant)
+    logger.info("tenant_registered", extra={"tenant_id": str(tenant.id), "subdomain": data.subdomain})
+
+    return APIResponse.ok(TokenResponse(
+        access_token=token,
+        tenant=TenantResponse.model_validate(tenant),
+    ))
+
+
+@router.post("/login", response_model=APIResponse[TokenResponse])
+async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
+    tenant = await get_tenant_by_email(db, data.email)
+    if not tenant or not tenant.hashed_password:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid email or password.")
+    if not _verify_password(data.password, tenant.hashed_password):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid email or password.")
+    if not tenant.is_active:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Account is inactive.")
+
+    token = _issue_tenant_token(tenant)
+    logger.info("tenant_login", extra={"tenant_id": str(tenant.id)})
+
+    return APIResponse.ok(TokenResponse(
+        access_token=token,
+        tenant=TenantResponse.model_validate(tenant),
+    ))
+
+
+@router.post("/admin/login", response_model=APIResponse[dict])
+async def admin_login(data: AdminLoginRequest):
+    if data.email != settings.ADMIN_EMAIL:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid admin credentials.")
+    if not settings.ADMIN_PASSWORD_HASH:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Admin login not configured.")
+    if not _verify_password(data.password, settings.ADMIN_PASSWORD_HASH):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid admin credentials.")
+
+    token = _issue_admin_token(data.email)
+    logger.info("admin_login", extra={"email": data.email})
+    return APIResponse.ok({"access_token": token, "role": "super_admin", "email": data.email})
+
+
+@router.get("/me", response_model=APIResponse[TenantResponse])
+async def get_current_tenant_profile(tenant: Tenant = Depends(get_current_tenant)):
+    return APIResponse.ok(TenantResponse.model_validate(tenant))
+
+
+@router.get("/demo-token", response_model=APIResponse[dict])
+async def get_demo_token(subdomain: str, db: AsyncSession = Depends(get_db)):
+    """DEV ONLY — issues a signed JWT for a seeded demo tenant."""
+    if settings.is_production:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Demo tokens are not available in production.")
+
+    tenant = await get_tenant_by_subdomain(db, subdomain)
+    if not tenant:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, f"Tenant '{subdomain}' not found.")
+
+    token = _issue_tenant_token(tenant)
     logger.info("demo_token_issued", extra={"tenant_id": str(tenant.id), "subdomain": subdomain})
 
     return APIResponse.ok({

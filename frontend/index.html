@@ -55,90 +55,505 @@
 </head>
 <body class="min-h-screen">
 
-<!-- ═══════════════════════════════════════════════════════════ LOGIN SCREEN -->
-<div id="view-login" class="min-h-screen flex flex-col items-center justify-center px-4 animate-fade-in">
+<!-- ══════════════════════════════════════════════════════════ LANDING PAGE -->
+<div id="view-landing" class="min-h-screen animate-fade-in">
 
-  <!-- Background glow -->
-  <div class="fixed inset-0 overflow-hidden pointer-events-none">
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600 opacity-10 rounded-full blur-3xl"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-600 opacity-10 rounded-full blur-3xl"></div>
+  <!-- Ambient background -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-600 opacity-[0.07] rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-violet-600 opacity-[0.07] rounded-full blur-3xl"></div>
   </div>
 
-  <div class="relative z-10 w-full max-w-4xl">
-    <!-- Logo -->
-    <div class="text-center mb-12">
-      <div class="inline-flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center">
-          <i class="fa-solid fa-robot text-white text-lg"></i>
-        </div>
-        <span class="text-2xl font-bold text-white">AppointAI</span>
+  <!-- ── Navbar ── -->
+  <nav class="relative z-10 flex items-center justify-between px-8 py-5 border-b" style="border-color:rgba(255,255,255,0.05);background:rgba(15,23,42,0.8);backdrop-filter:blur(12px)">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
+        <i class="fa-solid fa-robot text-white text-sm"></i>
       </div>
-      <h1 class="text-4xl font-bold text-white mb-3">Multi-Tenant AI Appointment Platform</h1>
-      <p class="text-slate-400 text-lg">Select a demo business to explore the platform</p>
+      <span class="font-bold text-white text-lg">AppointAI</span>
+      <span class="text-xs px-2 py-0.5 rounded-full ml-1" style="background:rgba(99,102,241,0.2);color:#818cf8;border:1px solid rgba(99,102,241,0.3)">v1.0 Beta</span>
     </div>
-
-    <!-- Tenant Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-
-      <!-- MedCare Clinic -->
-      <div class="tenant-card glass rounded-2xl p-8 cursor-pointer" onclick="loginAs('medcare')">
-        <div class="flex items-start justify-between mb-6">
-          <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3)">
-            <i class="fa-solid fa-hospital text-emerald-400 text-2xl"></i>
-          </div>
-          <span class="text-xs font-medium px-3 py-1 rounded-full" style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)">Clinic</span>
-        </div>
-        <h2 class="text-xl font-bold text-white mb-2">MedCare Clinic</h2>
-        <p class="text-slate-400 text-sm mb-5">Multi-specialty outpatient clinic with morning & evening OPD sessions</p>
-        <div class="flex flex-wrap gap-2 mb-6">
-          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">General OPD</span>
-          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Paediatrics</span>
-          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Gynaecology</span>
-        </div>
-        <div class="flex items-center justify-between text-sm text-slate-400 mb-6">
-          <span><i class="fa-regular fa-clock mr-1"></i> Mon–Fri 9–1 PM, 5–8:30 PM</span>
-          <span><i class="fa-solid fa-user-doctor mr-1"></i> 3 doctors</span>
-        </div>
-        <button class="w-full btn-primary text-white font-semibold py-3 rounded-xl text-sm">
-          <i class="fa-solid fa-arrow-right-to-bracket mr-2"></i>Demo as MedCare
-        </button>
-      </div>
-
-      <!-- Gloss & Glow Salon -->
-      <div class="tenant-card glass rounded-2xl p-8 cursor-pointer" onclick="loginAs('glossglow')">
-        <div class="flex items-start justify-between mb-6">
-          <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:rgba(236,72,153,0.15);border:1px solid rgba(236,72,153,0.3)">
-            <i class="fa-solid fa-scissors text-pink-400 text-2xl"></i>
-          </div>
-          <span class="text-xs font-medium px-3 py-1 rounded-full" style="background:rgba(236,72,153,0.15);color:#f472b6;border:1px solid rgba(236,72,153,0.3)">Salon</span>
-        </div>
-        <h2 class="text-xl font-bold text-white mb-2">Gloss & Glow Salon</h2>
-        <p class="text-slate-400 text-sm mb-5">Premium beauty salon with Hair, Skin, Nails and Bridal services</p>
-        <div class="flex flex-wrap gap-2 mb-6">
-          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Hair</span>
-          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Skin & Facial</span>
-          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Nails</span>
-          <span class="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">Bridal</span>
-        </div>
-        <div class="flex items-center justify-between text-sm text-slate-400 mb-6">
-          <span><i class="fa-regular fa-clock mr-1"></i> Tue–Sun 10 AM – 9 PM</span>
-          <span><i class="fa-solid fa-person mr-1"></i> 3 stylists</span>
-        </div>
-        <button class="w-full btn-primary text-white font-semibold py-3 rounded-xl text-sm">
-          <i class="fa-solid fa-arrow-right-to-bracket mr-2"></i>Demo as Gloss & Glow
-        </button>
-      </div>
+    <div class="flex items-center gap-3">
+      <button onclick="showAdminLogin()" class="text-slate-500 text-sm hover:text-slate-300 transition-colors px-3 py-1.5">Admin</button>
+      <button onclick="showAuth('login')" class="text-slate-300 text-sm font-medium px-4 py-2 rounded-lg hover:bg-white/5 transition-colors">Sign In</button>
+      <button onclick="showAuth('signup')" class="btn-primary text-white text-sm font-semibold px-5 py-2 rounded-lg">Get Started Free</button>
     </div>
+  </nav>
 
-    <!-- Error message -->
-    <div id="login-error" class="hidden text-center py-3 px-4 rounded-xl text-red-400 text-sm" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)"></div>
-
-    <p class="text-center text-slate-500 text-xs mt-6">
-      <i class="fa-solid fa-shield-halved mr-1"></i>
-      Demo mode — data is synthetic. Backend: <code class="text-indigo-400">localhost:8000</code>
+  <!-- ── Hero ── -->
+  <section class="relative z-10 max-w-5xl mx-auto px-8 pt-24 pb-16 text-center">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-8" style="background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3)">
+      <span class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse-slow"></span>
+      AI-powered booking platform — zero code setup
+    </div>
+    <h1 class="text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+      Your AI Receptionist,<br><span class="gradient-text">Available 24/7</span>
+    </h1>
+    <p class="text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+      Let AI handle your bookings, reschedules, and reminders via WhatsApp, SMS and web chat — while you focus on running your business.
     </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <button onclick="showAuth('signup')" class="btn-primary text-white font-semibold px-8 py-4 rounded-xl text-base">
+        <i class="fa-solid fa-rocket mr-2"></i>Start Free 14-Day Trial
+      </button>
+      <button onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})" class="glass text-slate-300 font-medium px-8 py-4 rounded-xl text-base hover:text-white transition-colors">
+        <i class="fa-solid fa-play mr-2 text-indigo-400"></i>See Live Demo
+      </button>
+    </div>
+    <p class="text-slate-600 text-sm mt-5">No credit card required &nbsp;·&nbsp; Setup in 5 minutes &nbsp;·&nbsp; Cancel anytime</p>
+  </section>
+
+  <!-- ── Feature Grid ── -->
+  <section class="relative z-10 max-w-5xl mx-auto px-8 py-16">
+    <h2 class="text-center text-2xl font-bold text-white mb-2">Everything your business needs</h2>
+    <p class="text-center text-slate-500 text-sm mb-10">One platform. All channels. Zero code.</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(99,102,241,0.2)">
+          <i class="fa-solid fa-robot text-indigo-400"></i>
+        </div>
+        <h3 class="text-white font-semibold mb-2">AI Booking Agent</h3>
+        <p class="text-slate-500 text-sm">Understands natural language. Books, reschedules, and cancels — automatically.</p>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(16,185,129,0.2)">
+          <i class="fa-brands fa-whatsapp text-emerald-400"></i>
+        </div>
+        <h3 class="text-white font-semibold mb-2">WhatsApp & SMS</h3>
+        <p class="text-slate-500 text-sm">Connect your Twilio number. Customers interact on the channels they already use.</p>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(245,158,11,0.2)">
+          <i class="fa-solid fa-diagram-project text-amber-400"></i>
+        </div>
+        <h3 class="text-white font-semibold mb-2">Visual Agent Builder</h3>
+        <p class="text-slate-500 text-sm">Choose a pre-built template or mix agents with point-and-click. No code required.</p>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(236,72,153,0.2)">
+          <i class="fa-solid fa-shield-halved text-pink-400"></i>
+        </div>
+        <h3 class="text-white font-semibold mb-2">Multi-Tenant Secure</h3>
+        <p class="text-slate-500 text-sm">Row-level security. Every business's data is completely isolated from others.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How It Works ── -->
+  <section class="relative z-10 max-w-4xl mx-auto px-8 py-12">
+    <h2 class="text-center text-2xl font-bold text-white mb-2">Up and running in 3 steps</h2>
+    <p class="text-center text-slate-500 text-sm mb-12">From zero to live AI receptionist in under 5 minutes</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4 text-white font-bold">1</div>
+        <h3 class="text-white font-semibold mb-2">Register Your Business</h3>
+        <p class="text-slate-500 text-sm">Create your account, enter your business name, type, and contact details. Takes 60 seconds.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4 text-white font-bold">2</div>
+        <h3 class="text-white font-semibold mb-2">Configure Your Agent</h3>
+        <p class="text-slate-500 text-sm">Add services, set working hours, and pick an AI agent template. One click to activate.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4 text-white font-bold">3</div>
+        <h3 class="text-white font-semibold mb-2">Go Live</h3>
+        <p class="text-slate-500 text-sm">Share your chat link or connect WhatsApp. Your AI receptionist starts taking bookings immediately.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Demo Accounts ── -->
+  <section id="demo-section" class="relative z-10 max-w-5xl mx-auto px-8 py-12">
+    <div class="glass rounded-2xl p-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-white font-bold text-xl mb-1">Live Demo Accounts</h2>
+          <p class="text-slate-400 text-sm">Click any card to explore a fully configured business — no login needed</p>
+        </div>
+        <span class="text-xs px-3 py-1.5 rounded-full" style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)">
+          <i class="fa-solid fa-circle text-xs mr-1"></i>Live Data
+        </span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- MedCare -->
+        <div class="rounded-xl p-5 cursor-pointer transition-all hover:scale-[1.02]" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2)" onclick="loginAs('medcare')">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(16,185,129,0.2)">
+              <i class="fa-solid fa-hospital text-emerald-400"></i>
+            </div>
+            <div>
+              <p class="text-white font-semibold text-sm">MedCare Clinic</p>
+              <p class="text-emerald-500 text-xs">Clinic</p>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs mb-3">3 doctors · OPD sessions · 7 services</p>
+          <span class="text-xs text-emerald-400 font-medium">Demo Access <i class="fa-solid fa-arrow-right ml-1"></i></span>
+        </div>
+        <!-- Gloss & Glow -->
+        <div class="rounded-xl p-5 cursor-pointer transition-all hover:scale-[1.02]" style="background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.2)" onclick="loginAs('glossglow')">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(236,72,153,0.2)">
+              <i class="fa-solid fa-scissors text-pink-400"></i>
+            </div>
+            <div>
+              <p class="text-white font-semibold text-sm">Gloss & Glow Salon</p>
+              <p class="text-pink-500 text-xs">Salon</p>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs mb-3">3 stylists · Hair, Skin, Nails, Bridal</p>
+          <span class="text-xs text-pink-400 font-medium">Demo Access <i class="fa-solid fa-arrow-right ml-1"></i></span>
+        </div>
+        <!-- FitLife -->
+        <div class="rounded-xl p-5 cursor-pointer transition-all hover:scale-[1.02]" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2)" onclick="showAuth('login')">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(245,158,11,0.2)">
+              <i class="fa-solid fa-dumbbell text-amber-400"></i>
+            </div>
+            <div>
+              <p class="text-white font-semibold text-sm">FitLife Coaching</p>
+              <p class="text-amber-500 text-xs">Coaching — New User</p>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs mb-3">coach@fitlife.example &nbsp;/&nbsp; demo@123</p>
+          <span class="text-xs text-amber-400 font-medium">Login to Access <i class="fa-solid fa-arrow-right ml-1"></i></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer class="relative z-10 border-t py-8 text-center" style="border-color:rgba(255,255,255,0.05)">
+    <div class="flex items-center justify-center gap-3 mb-3">
+      <div class="w-6 h-6 gradient-bg rounded-md flex items-center justify-center">
+        <i class="fa-solid fa-robot text-white text-xs"></i>
+      </div>
+      <span class="text-white font-semibold text-sm">AppointAI</span>
+    </div>
+    <p class="text-slate-600 text-xs">Phase 4 — Multi-Tenant AI Appointment Platform &nbsp;|&nbsp; Built with FastAPI + LangGraph</p>
+  </footer>
+
+</div><!-- /view-landing -->
+
+<!-- ══════════════════════════════════════════════════════════ AUTH SCREEN -->
+<div id="view-auth" class="hidden min-h-screen flex items-center justify-center px-4 py-12 animate-fade-in">
+
+  <div class="fixed inset-0 pointer-events-none">
+    <div class="absolute top-1/3 left-1/4 w-80 h-80 bg-indigo-600 opacity-10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/3 right-1/4 w-80 h-80 bg-violet-600 opacity-10 rounded-full blur-3xl"></div>
   </div>
-</div>
+
+  <div class="relative z-10 w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <button onclick="showLanding()" class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-300 transition-colors text-sm mb-6">
+        <i class="fa-solid fa-arrow-left"></i> Back to home
+      </button>
+      <div class="flex items-center justify-center gap-3 mb-2">
+        <div class="w-9 h-9 gradient-bg rounded-xl flex items-center justify-center">
+          <i class="fa-solid fa-robot text-white"></i>
+        </div>
+        <span class="text-xl font-bold text-white">AppointAI</span>
+      </div>
+    </div>
+
+    <!-- Tab switcher -->
+    <div class="glass rounded-2xl overflow-hidden">
+      <div class="flex border-b" style="border-color:rgba(255,255,255,0.06)">
+        <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-4 text-sm font-semibold text-indigo-400 border-b-2 border-indigo-500 transition-all">Sign In</button>
+        <button id="tab-signup" onclick="switchAuthTab('signup')" class="flex-1 py-4 text-sm font-medium text-slate-500 hover:text-slate-300 transition-all">Create Account</button>
+      </div>
+
+      <!-- ── Login Form ── -->
+      <div id="auth-panel-login" class="p-8">
+        <h2 class="text-white font-bold text-xl mb-1">Welcome back</h2>
+        <p class="text-slate-500 text-sm mb-6">Sign in to your business dashboard</p>
+        <div class="space-y-4">
+          <div>
+            <label class="text-slate-400 text-xs font-medium block mb-1.5">Email Address</label>
+            <input id="login-email" type="email" placeholder="you@yourbusiness.com"
+              class="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)"
+              onkeydown="if(event.key==='Enter') document.getElementById('login-password').focus()"/>
+          </div>
+          <div>
+            <label class="text-slate-400 text-xs font-medium block mb-1.5">Password</label>
+            <input id="login-password" type="password" placeholder="••••••••"
+              class="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)"
+              onkeydown="if(event.key==='Enter') doLogin()"/>
+          </div>
+          <div id="login-error" class="hidden py-2.5 px-4 rounded-xl text-red-400 text-xs" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)"></div>
+          <button onclick="doLogin()" class="w-full btn-primary text-white font-semibold py-3.5 rounded-xl text-sm mt-2">
+            <i class="fa-solid fa-arrow-right-to-bracket mr-2"></i>Sign In
+          </button>
+        </div>
+        <div class="mt-6 pt-5 border-t" style="border-color:rgba(255,255,255,0.06)">
+          <p class="text-slate-600 text-xs text-center mb-3">Or try a demo account</p>
+          <div class="flex gap-2">
+            <button onclick="loginAs('medcare')" class="flex-1 py-2 rounded-lg text-xs text-slate-400 hover:text-white transition-colors" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)">MedCare</button>
+            <button onclick="loginAs('glossglow')" class="flex-1 py-2 rounded-lg text-xs text-slate-400 hover:text-white transition-colors" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)">Gloss &amp; Glow</button>
+            <button onclick="loginAs('fitlife')" class="flex-1 py-2 rounded-lg text-xs text-slate-400 hover:text-white transition-colors" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)">FitLife</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Signup Wizard ── -->
+      <div id="auth-panel-signup" class="hidden">
+        <!-- Progress bar -->
+        <div class="px-8 pt-7 pb-4">
+          <div class="flex items-center gap-2 mb-5">
+            <div id="sw-step1-dot" class="w-7 h-7 rounded-full gradient-bg flex items-center justify-center text-white text-xs font-bold">1</div>
+            <div id="sw-bar1" class="flex-1 h-1 rounded-full" style="background:rgba(99,102,241,0.3)"></div>
+            <div id="sw-step2-dot" class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(255,255,255,0.08);color:#64748b">2</div>
+            <div id="sw-bar2" class="flex-1 h-1 rounded-full" style="background:rgba(99,102,241,0.15)"></div>
+            <div id="sw-step3-dot" class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(255,255,255,0.08);color:#64748b">3</div>
+          </div>
+          <div id="sw-step-labels" class="flex justify-between text-xs text-slate-600">
+            <span>Business Info</span><span>Password</span><span>Agent Setup</span>
+          </div>
+        </div>
+
+        <!-- Step 1: Business Info -->
+        <div id="sw-step1" class="px-8 pb-8">
+          <h2 class="text-white font-bold text-xl mb-1">Tell us about your business</h2>
+          <p class="text-slate-500 text-sm mb-6">This sets up your workspace and agent</p>
+          <div class="space-y-4">
+            <div>
+              <label class="text-slate-400 text-xs font-medium block mb-1.5">Business Name</label>
+              <input id="sw-name" type="text" placeholder="e.g. Dr. Patel's Clinic"
+                class="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)"/>
+            </div>
+            <div>
+              <label class="text-slate-400 text-xs font-medium block mb-1.5">Business Type</label>
+              <select id="sw-type" class="w-full px-4 py-3 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style="background:#1e293b;border:1px solid rgba(255,255,255,0.1)">
+                <option value="clinic">Clinic / Hospital</option>
+                <option value="salon">Salon / Spa</option>
+                <option value="coaching">Coaching / Training</option>
+                <option value="consultancy">Consultancy</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-slate-400 text-xs font-medium block mb-1.5">Subdomain</label>
+                <div class="flex items-center rounded-xl overflow-hidden" style="border:1px solid rgba(255,255,255,0.1)">
+                  <input id="sw-subdomain" type="text" placeholder="mystore"
+                    class="flex-1 px-3 py-3 text-sm text-white placeholder-slate-600 focus:outline-none bg-transparent min-w-0"
+                    style="background:rgba(255,255,255,0.05)"/>
+                  <span class="px-2 py-3 text-xs text-slate-600 whitespace-nowrap" style="background:rgba(255,255,255,0.03)">.appointai</span>
+                </div>
+              </div>
+              <div>
+                <label class="text-slate-400 text-xs font-medium block mb-1.5">Phone</label>
+                <input id="sw-phone" type="tel" placeholder="+919876543210"
+                  class="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)"/>
+              </div>
+            </div>
+            <div>
+              <label class="text-slate-400 text-xs font-medium block mb-1.5">Email Address</label>
+              <input id="sw-email" type="email" placeholder="owner@yourbusiness.com"
+                class="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)"/>
+            </div>
+            <div id="sw-error1" class="hidden py-2.5 px-4 rounded-xl text-red-400 text-xs" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)"></div>
+            <button onclick="swNext(1)" class="w-full btn-primary text-white font-semibold py-3.5 rounded-xl text-sm">Next: Set Password <i class="fa-solid fa-arrow-right ml-1"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 2: Password -->
+        <div id="sw-step2" class="hidden px-8 pb-8">
+          <h2 class="text-white font-bold text-xl mb-1">Secure your account</h2>
+          <p class="text-slate-500 text-sm mb-6">You'll use this to log in every time</p>
+          <div class="space-y-4">
+            <div>
+              <label class="text-slate-400 text-xs font-medium block mb-1.5">Password</label>
+              <input id="sw-password" type="password" placeholder="Minimum 8 characters"
+                class="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)"/>
+            </div>
+            <div>
+              <label class="text-slate-400 text-xs font-medium block mb-1.5">Confirm Password</label>
+              <input id="sw-password2" type="password" placeholder="Repeat your password"
+                class="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)"/>
+            </div>
+            <div id="sw-error2" class="hidden py-2.5 px-4 rounded-xl text-red-400 text-xs" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)"></div>
+            <button onclick="swNext(2)" class="w-full btn-primary text-white font-semibold py-3.5 rounded-xl text-sm">Next: Choose Agent <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            <button onclick="swBack(2)" class="w-full py-2.5 rounded-xl text-sm text-slate-500 hover:text-white transition-colors">Back</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Agent Template -->
+        <div id="sw-step3" class="hidden px-8 pb-8">
+          <h2 class="text-white font-bold text-xl mb-1">Choose your AI agent</h2>
+          <p class="text-slate-500 text-sm mb-6">You can change this any time from the dashboard</p>
+          <div class="space-y-3 mb-5" id="sw-template-options">
+            <div class="rounded-xl p-4 cursor-pointer transition-all sw-template-card" data-key="full" onclick="selectTemplate('full')"
+              style="border:2px solid rgba(99,102,241,0.5);background:rgba(99,102,241,0.1)">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-infinity text-indigo-400 text-lg"></i>
+                <div class="flex-1">
+                  <p class="text-white font-semibold text-sm">Full Booking Suite</p>
+                  <p class="text-slate-500 text-xs">Book, reschedule, cancel, info queries, notifications — all included</p>
+                </div>
+                <i id="sw-check-full" class="fa-solid fa-circle-check text-indigo-400"></i>
+              </div>
+            </div>
+            <div class="rounded-xl p-4 cursor-pointer transition-all sw-template-card" data-key="booking" onclick="selectTemplate('booking')"
+              style="border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03)">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-calendar-plus text-emerald-400 text-lg"></i>
+                <div class="flex-1">
+                  <p class="text-white font-semibold text-sm">Booking + Info</p>
+                  <p class="text-slate-500 text-xs">Booking, service catalogue, slot availability, and confirmations</p>
+                </div>
+                <i id="sw-check-booking" class="fa-solid fa-circle-check text-slate-700"></i>
+              </div>
+            </div>
+            <div class="rounded-xl p-4 cursor-pointer transition-all sw-template-card" data-key="info" onclick="selectTemplate('info')"
+              style="border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03)">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-circle-info text-violet-400 text-lg"></i>
+                <div class="flex-1">
+                  <p class="text-white font-semibold text-sm">Info & Status Only</p>
+                  <p class="text-slate-500 text-xs">Read-only — service catalogue, slot availability, appointment status</p>
+                </div>
+                <i id="sw-check-info" class="fa-solid fa-circle-check text-slate-700"></i>
+              </div>
+            </div>
+          </div>
+          <div id="sw-error3" class="hidden py-2.5 px-4 rounded-xl text-red-400 text-xs mb-4" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)"></div>
+          <button onclick="swSubmit()" class="w-full btn-primary text-white font-semibold py-3.5 rounded-xl text-sm">
+            <i class="fa-solid fa-rocket mr-2"></i>Create My Account
+          </button>
+          <button onclick="swBack(3)" class="w-full py-2.5 rounded-xl text-sm text-slate-500 hover:text-white transition-colors mt-2">Back</button>
+        </div>
+      </div><!-- /auth-panel-signup -->
+    </div><!-- /glass card -->
+  </div><!-- /max-w-md -->
+</div><!-- /view-auth -->
+
+<!-- ══════════════════════════════════════════════════════════ ADMIN LOGIN -->
+<div id="view-admin-login" class="hidden min-h-screen flex items-center justify-center px-4 animate-fade-in">
+  <div class="fixed inset-0 pointer-events-none">
+    <div class="absolute top-1/3 right-1/3 w-80 h-80 bg-red-600 opacity-[0.06] rounded-full blur-3xl"></div>
+  </div>
+  <div class="relative z-10 w-full max-w-sm">
+    <div class="text-center mb-8">
+      <button onclick="showLanding()" class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-300 transition-colors text-sm mb-6">
+        <i class="fa-solid fa-arrow-left"></i> Back to home
+      </button>
+      <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3)">
+        <i class="fa-solid fa-shield-halved text-red-400 text-xl"></i>
+      </div>
+      <h2 class="text-white font-bold text-xl">Platform Admin</h2>
+      <p class="text-slate-500 text-sm mt-1">Restricted access — authorised personnel only</p>
+    </div>
+    <div class="glass rounded-2xl p-8">
+      <div class="space-y-4">
+        <div>
+          <label class="text-slate-400 text-xs font-medium block mb-1.5">Admin Email</label>
+          <input id="admin-email" type="email" placeholder="admin@appointai.in"
+            class="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)"/>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs font-medium block mb-1.5">Admin Password</label>
+          <input id="admin-password" type="password" placeholder="••••••••"
+            class="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)"
+            onkeydown="if(event.key==='Enter') doAdminLogin()"/>
+        </div>
+        <div id="admin-error" class="hidden py-2.5 px-4 rounded-xl text-red-400 text-xs" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)"></div>
+        <button onclick="doAdminLogin()" class="w-full py-3.5 rounded-xl text-sm font-semibold text-white transition-all" style="background:linear-gradient(135deg,#dc2626,#991b1b)">
+          <i class="fa-solid fa-key mr-2"></i>Sign In as Admin
+        </button>
+      </div>
+    </div>
+  </div>
+</div><!-- /view-admin-login -->
+
+<!-- ══════════════════════════════════════════════════════════ ADMIN DASHBOARD -->
+<div id="view-admin-dashboard" class="hidden min-h-screen animate-fade-in">
+  <div class="fixed inset-0 pointer-events-none">
+    <div class="absolute top-0 left-0 w-96 h-96 bg-red-600 opacity-[0.05] rounded-full blur-3xl"></div>
+  </div>
+  <!-- Admin Topbar -->
+  <header class="relative z-10 flex items-center justify-between px-8 py-5 border-b" style="background:rgba(15,23,42,0.9);backdrop-filter:blur(12px);border-color:rgba(239,68,68,0.15)">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(239,68,68,0.2)">
+        <i class="fa-solid fa-shield-halved text-red-400 text-sm"></i>
+      </div>
+      <div>
+        <span class="text-white font-bold">AppointAI Admin</span>
+        <span class="ml-2 text-xs px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.2);color:#f87171">Super Admin</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span id="admin-user-email" class="text-slate-500 text-sm"></span>
+      <button onclick="adminLogout()" class="text-slate-500 hover:text-white text-sm transition-colors">
+        <i class="fa-solid fa-right-from-bracket mr-1"></i>Logout
+      </button>
+    </div>
+  </header>
+  <!-- Admin Content -->
+  <main class="relative z-10 max-w-5xl mx-auto px-8 py-12">
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-white mb-1">Platform Overview</h1>
+      <p class="text-slate-500 text-sm">Super admin portal — Phase 5 will add full tenant management, billing, and usage analytics</p>
+    </div>
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+      <div class="glass rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-slate-400 text-sm">Registered Tenants</span>
+          <i class="fa-solid fa-building text-indigo-400"></i>
+        </div>
+        <p id="admin-stat-tenants" class="text-3xl font-bold text-white">—</p>
+        <p class="text-slate-600 text-xs mt-1">Active businesses</p>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-slate-400 text-sm">Deployed Agents</span>
+          <i class="fa-solid fa-robot text-violet-400"></i>
+        </div>
+        <p id="admin-stat-agents" class="text-3xl font-bold text-violet-400">—</p>
+        <p class="text-slate-600 text-xs mt-1">Live AI agents</p>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-slate-400 text-sm">Platform Version</span>
+          <i class="fa-solid fa-code-branch text-emerald-400"></i>
+        </div>
+        <p class="text-2xl font-bold text-emerald-400">Phase 4</p>
+        <p class="text-slate-600 text-xs mt-1">Public launch + Auth</p>
+      </div>
+    </div>
+    <!-- Phase 5 teaser -->
+    <div class="glass rounded-2xl p-8" style="border:1px solid rgba(99,102,241,0.2)">
+      <div class="flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center flex-shrink-0 mt-1">
+          <i class="fa-solid fa-rocket text-white text-sm"></i>
+        </div>
+        <div>
+          <h3 class="text-white font-bold mb-2">Phase 5 — Full Admin Portal (Coming Next)</h3>
+          <p class="text-slate-400 text-sm mb-4">The next phase will add complete super admin capabilities:</p>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400"></i> Tenant management</div>
+            <div class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400"></i> LLM usage analytics</div>
+            <div class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400"></i> Per-tenant cost dashboard</div>
+            <div class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400"></i> Stripe billing metrics</div>
+            <div class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400"></i> Suspend / reactivate tenants</div>
+            <div class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-check text-indigo-400"></i> Platform health monitoring</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div><!-- /view-admin-dashboard -->
 
 <!-- ═══════════════════════════════════════════════════════════ MAIN APP -->
 <div id="view-app" class="hidden min-h-screen flex">
@@ -201,7 +616,7 @@
     <!-- Logout -->
     <div class="p-4 border-t" style="border-color:rgba(255,255,255,0.06)">
       <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-        <i class="fa-solid fa-right-from-bracket"></i> Switch Tenant
+        <i class="fa-solid fa-right-from-bracket"></i> Log Out
       </button>
     </div>
   </aside>
@@ -890,40 +1305,312 @@
   let currentGraphName = null;
   let sessionId = null;
 
-  // ── Auth ──────────────────────────────────────────────────────────────────
+  // ── View routing ─────────────────────────────────────────────────────────
 
-  async function loginAs(subdomain) {
+  const ALL_VIEWS = ['view-landing', 'view-auth', 'view-admin-login', 'view-admin-dashboard', 'view-app'];
+
+  function hideAllViews() {
+    ALL_VIEWS.forEach(id => document.getElementById(id).classList.add('hidden'));
+  }
+
+  function showLanding() {
+    hideAllViews();
+    document.getElementById('view-landing').classList.remove('hidden');
+  }
+
+  function showAuth(tab = 'login') {
+    hideAllViews();
+    document.getElementById('view-auth').classList.remove('hidden');
+    switchAuthTab(tab);
+  }
+
+  function showAdminLogin() {
+    hideAllViews();
+    document.getElementById('view-admin-login').classList.remove('hidden');
+  }
+
+  function showAdminDashboard(email) {
+    hideAllViews();
+    document.getElementById('view-admin-dashboard').classList.remove('hidden');
+    document.getElementById('admin-user-email').textContent = email || '';
+    loadAdminStats();
+  }
+
+  function showApp() {
+    hideAllViews();
+    document.getElementById('view-app').classList.remove('hidden');
+  }
+
+  // ── Auth tab switching ────────────────────────────────────────────────────
+
+  function switchAuthTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('auth-panel-login').classList.toggle('hidden', !isLogin);
+    document.getElementById('auth-panel-signup').classList.toggle('hidden', isLogin);
+    document.getElementById('tab-login').className = isLogin
+      ? 'flex-1 py-4 text-sm font-semibold text-indigo-400 border-b-2 border-indigo-500 transition-all'
+      : 'flex-1 py-4 text-sm font-medium text-slate-500 hover:text-slate-300 transition-all';
+    document.getElementById('tab-signup').className = isLogin
+      ? 'flex-1 py-4 text-sm font-medium text-slate-500 hover:text-slate-300 transition-all'
+      : 'flex-1 py-4 text-sm font-semibold text-indigo-400 border-b-2 border-indigo-500 transition-all';
+  }
+
+  // ── Credential Login ──────────────────────────────────────────────────────
+
+  async function doLogin() {
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errEl    = document.getElementById('login-error');
+    errEl.classList.add('hidden');
+
+    if (!email || !password) {
+      errEl.textContent = 'Email and password are required.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
     document.getElementById('loading-overlay').classList.remove('hidden');
-    document.getElementById('login-error').classList.add('hidden');
-
     try {
-      const res = await fetch(`${API}/auth/demo-token?subdomain=${subdomain}`);
+      const res  = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
       const json = await res.json();
-
-      if (!res.ok) throw new Error(json.detail || 'Auth failed');
+      if (!res.ok) throw new Error(json.detail || 'Login failed');
 
       token = json.data.access_token;
       currentTenant = json.data.tenant;
       sessionId = crypto.randomUUID();
-
       updateSidebar();
       showApp();
       showView('dashboard');
       loadDashboard();
       checkAndAutoConnectGraph();
-
     } catch (err) {
-      document.getElementById('login-error').textContent = '⚠ ' + err.message;
-      document.getElementById('login-error').classList.remove('hidden');
+      errEl.textContent = err.message;
+      errEl.classList.remove('hidden');
     } finally {
       document.getElementById('loading-overlay').classList.add('hidden');
     }
   }
 
+  // ── Demo-token Login (existing tenants without passwords) ─────────────────
+
+  async function loginAs(subdomain) {
+    document.getElementById('loading-overlay').classList.remove('hidden');
+
+    try {
+      const res  = await fetch(`${API}/auth/demo-token?subdomain=${subdomain}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.detail || 'Demo login failed');
+
+      token = json.data.access_token;
+      currentTenant = json.data.tenant;
+      sessionId = crypto.randomUUID();
+      updateSidebar();
+      showApp();
+      showView('dashboard');
+      loadDashboard();
+      checkAndAutoConnectGraph();
+    } catch (err) {
+      alert('Demo login failed: ' + err.message);
+    } finally {
+      document.getElementById('loading-overlay').classList.add('hidden');
+    }
+  }
+
+  // ── Admin Login ───────────────────────────────────────────────────────────
+
+  async function doAdminLogin() {
+    const email    = document.getElementById('admin-email').value.trim();
+    const password = document.getElementById('admin-password').value;
+    const errEl    = document.getElementById('admin-error');
+    errEl.classList.add('hidden');
+
+    if (!email || !password) {
+      errEl.textContent = 'Email and password are required.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    document.getElementById('loading-overlay').classList.remove('hidden');
+    try {
+      const res  = await fetch(`${API}/auth/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.detail || 'Admin login failed');
+
+      showAdminDashboard(json.data.email);
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.classList.remove('hidden');
+    } finally {
+      document.getElementById('loading-overlay').classList.add('hidden');
+    }
+  }
+
+  function adminLogout() {
+    showLanding();
+  }
+
+  async function loadAdminStats() {
+    try {
+      // Placeholder — will be backed by real admin API in Phase 5
+      document.getElementById('admin-stat-tenants').textContent = '3';
+      document.getElementById('admin-stat-agents').textContent = '2';
+    } catch (_) {}
+  }
+
+  // ── Signup Wizard ─────────────────────────────────────────────────────────
+
+  let selectedTemplate = 'full';
+
+  function selectTemplate(key) {
+    selectedTemplate = key;
+    ['full', 'booking', 'info'].forEach(k => {
+      const card  = document.querySelector(`[data-key="${k}"]`);
+      const check = document.getElementById(`sw-check-${k}`);
+      if (k === key) {
+        card.style.border  = '2px solid rgba(99,102,241,0.5)';
+        card.style.background = 'rgba(99,102,241,0.1)';
+        check.style.color  = '#818cf8';
+      } else {
+        card.style.border  = '1px solid rgba(255,255,255,0.08)';
+        card.style.background = 'rgba(255,255,255,0.03)';
+        check.style.color  = '#334155';
+      }
+    });
+  }
+
+  function swSetStep(n) {
+    [1, 2, 3].forEach(i => {
+      document.getElementById(`sw-step${i}`).classList.toggle('hidden', i !== n);
+      const dot = document.getElementById(`sw-step${i}-dot`);
+      if (i < n) {
+        dot.className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold gradient-bg text-white';
+        dot.innerHTML = '<i class="fa-solid fa-check text-xs"></i>';
+      } else if (i === n) {
+        dot.className = 'w-7 h-7 rounded-full gradient-bg flex items-center justify-center text-white text-xs font-bold';
+        dot.textContent = i;
+      } else {
+        dot.className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold';
+        dot.style.background = 'rgba(255,255,255,0.08)';
+        dot.style.color = '#64748b';
+        dot.textContent = i;
+      }
+    });
+    // progress bars
+    document.getElementById('sw-bar1').style.background = n >= 2 ? 'linear-gradient(90deg,#4f46e5,#7c3aed)' : 'rgba(99,102,241,0.3)';
+    document.getElementById('sw-bar2').style.background = n >= 3 ? 'linear-gradient(90deg,#4f46e5,#7c3aed)' : 'rgba(99,102,241,0.15)';
+  }
+
+  function swNext(fromStep) {
+    const err = document.getElementById(`sw-error${fromStep}`);
+    err.classList.add('hidden');
+
+    if (fromStep === 1) {
+      const name = document.getElementById('sw-name').value.trim();
+      const sub  = document.getElementById('sw-subdomain').value.trim();
+      const email= document.getElementById('sw-email').value.trim();
+      const phone= document.getElementById('sw-phone').value.trim();
+      if (!name || !sub || !email || !phone) {
+        err.textContent = 'Please fill in all fields.';
+        err.classList.remove('hidden');
+        return;
+      }
+      if (!/^[a-z0-9-]+$/.test(sub)) {
+        err.textContent = 'Subdomain: lowercase letters, numbers and hyphens only.';
+        err.classList.remove('hidden');
+        return;
+      }
+    }
+
+    if (fromStep === 2) {
+      const pw  = document.getElementById('sw-password').value;
+      const pw2 = document.getElementById('sw-password2').value;
+      if (pw.length < 8) {
+        err.textContent = 'Password must be at least 8 characters.';
+        err.classList.remove('hidden');
+        return;
+      }
+      if (pw !== pw2) {
+        err.textContent = 'Passwords do not match.';
+        err.classList.remove('hidden');
+        return;
+      }
+    }
+
+    swSetStep(fromStep + 1);
+  }
+
+  function swBack(fromStep) {
+    swSetStep(fromStep - 1);
+  }
+
+  async function swSubmit() {
+    const errEl = document.getElementById('sw-error3');
+    errEl.classList.add('hidden');
+    document.getElementById('loading-overlay').classList.remove('hidden');
+
+    const payload = {
+      name:          document.getElementById('sw-name').value.trim(),
+      business_type: document.getElementById('sw-type').value,
+      subdomain:     document.getElementById('sw-subdomain').value.trim().toLowerCase(),
+      email:         document.getElementById('sw-email').value.trim(),
+      phone:         document.getElementById('sw-phone').value.trim(),
+      password:      document.getElementById('sw-password').value,
+    };
+
+    try {
+      // Step 1: Register
+      const regRes  = await fetch(`${API}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const regJson = await regRes.json();
+      if (!regRes.ok) throw new Error(regJson.detail || 'Registration failed');
+
+      token = regJson.data.access_token;
+      currentTenant = regJson.data.tenant;
+      sessionId = crypto.randomUUID();
+
+      // Step 2: Activate chosen template
+      const tmpl = GRAPH_TEMPLATES[selectedTemplate];
+      if (tmpl) {
+        try {
+          const gRes = await apiFetch('/graphs', {
+            method: 'POST',
+            body: JSON.stringify({ name: tmpl.name, description: tmpl.description, definition: tmpl.definition }),
+          });
+          if (gRes.data?.id) {
+            await apiFetch(`/graphs/${gRes.data.id}/deploy`, { method: 'POST' });
+            currentGraphId = gRes.data.id;
+            currentGraphName = tmpl.name;
+          }
+        } catch (_) { /* non-fatal: user can set up agent later */ }
+      }
+
+      updateSidebar();
+      showApp();
+      showView('agents');
+      loadDashboard();
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.classList.remove('hidden');
+    } finally {
+      document.getElementById('loading-overlay').classList.add('hidden');
+    }
+  }
+
+  // ── Logout ────────────────────────────────────────────────────────────────
+
   function logout() {
     token = null; currentTenant = null; currentGraphId = null; currentGraphName = null;
-    document.getElementById('view-app').classList.add('hidden');
-    document.getElementById('view-login').classList.remove('hidden');
     document.getElementById('chat-messages').innerHTML = `
       <div class="flex gap-3 items-end">
         <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center flex-shrink-0">
@@ -934,19 +1621,16 @@
           <p class="text-slate-400 text-xs mt-2">How can I help you today?</p>
         </div>
       </div>`;
+    showLanding();
   }
 
   function updateSidebar() {
-    const isClinic = currentTenant.business_type === 'clinic';
+    const icons = { clinic: 'fa-hospital', salon: 'fa-scissors', coaching: 'fa-dumbbell', consultancy: 'fa-briefcase', other: 'fa-building' };
+    const iconClass = icons[currentTenant?.business_type] || 'fa-building';
     document.getElementById('sidebar-tenant-name').textContent = currentTenant.name;
-    document.getElementById('sidebar-tenant-plan').textContent = currentTenant.plan.charAt(0).toUpperCase() + currentTenant.plan.slice(1) + ' Plan';
+    document.getElementById('sidebar-tenant-plan').textContent = (currentTenant.plan || 'trial').charAt(0).toUpperCase() + (currentTenant.plan || 'trial').slice(1) + ' Plan';
     const icon = document.getElementById('sidebar-tenant-icon');
-    icon.innerHTML = `<i class="fa-solid ${isClinic ? 'fa-hospital' : 'fa-scissors'} text-white text-sm"></i>`;
-  }
-
-  function showApp() {
-    document.getElementById('view-login').classList.add('hidden');
-    document.getElementById('view-app').classList.remove('hidden');
+    icon.innerHTML = `<i class="fa-solid ${iconClass} text-white text-sm"></i>`;
   }
 
   // ── API helpers ───────────────────────────────────────────────────────────
