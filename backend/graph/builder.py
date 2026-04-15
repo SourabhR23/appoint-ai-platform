@@ -70,17 +70,25 @@ def compile_graph(graph_definition: dict, tenant_id: str) -> Any:
         agent_class = get_agent_class(node_type)  # raises ValueError on unknown type
         agent_instance = agent_class()
 
-        # Wrap run() to inject node_config into state before execution
-        async def make_node_fn(agent=agent_instance, config=node_config):
+        # Wrap run() to inject node_config into state before execution.
+        # make_node_fn is a plain sync function — it just builds a closure.
+        # The inner node_fn is async, which is what LangGraph expects.
+        def make_node_fn(agent=agent_instance, node_cfg=node_config):
             async def node_fn(state: dict) -> dict:
-                # Merge node-level config into state so agent can read it
-                enriched = {**state, "node_config": config}
+                # Inject DB session and tenant_config from request-scoped context
+                # vars (set in executor.py before ainvoke). This avoids LangGraph
+                # stripping non-schema keys during state merges.
+                from backend.graph.context import current_db, current_tenant_config
+                enriched = {
+                    **state,
+                    "node_config": node_cfg,
+                    "db": current_db.get(),
+                    "tenant_config": current_tenant_config.get(),
+                }
                 return await agent.run(enriched)
             return node_fn
 
-        import asyncio
-        node_fn = asyncio.get_event_loop().run_until_complete(make_node_fn())
-        workflow.add_node(node_id, node_fn)
+        workflow.add_node(node_id, make_node_fn())
 
     workflow.set_entry_point(entry_node["id"])
 
@@ -106,12 +114,22 @@ def compile_graph(graph_definition: dict, tenant_id: str) -> Any:
 
     # Register all conditional edges
     for source, condition_map in conditional_targets.items():
-        # Router function reads state["next_node"] set by each agent
+        # Router function reads state["next_node"] set by each agent.
+        # IMPORTANT: must return the condition KEY (e.g. "book"), NOT the resolved
+        # node name (e.g. "booking_agent"). LangGraph applies the path_map itself.
         def make_router(cm: dict):
             def router(state: dict) -> str:
-                # Prefer explicit next_node from agent over intent
                 next_node = state.get("next_node") or state.get("intent", "other")
-                return cm.get(next_node, END)
+                # If next_node is already a condition key, use it directly
+                if next_node in cm:
+                    return next_node
+                # If next_node is a node name (e.g. "escalation_agent" from _error_state),
+                # reverse-lookup the condition key that points to it
+                for condition_key, target_node in cm.items():
+                    if target_node == next_node:
+                        return condition_key
+                # Fallback: use "other" if present, else first condition
+                return "other" if "other" in cm else next(iter(cm))
             return router
 
         workflow.add_conditional_edges(source, make_router(condition_map), condition_map)

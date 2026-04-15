@@ -136,6 +136,20 @@ async def get_all_versions(
     return list(result.scalars().all())
 
 
+async def get_deployed_graph(
+    db: AsyncSession,
+    tenant_id: uuid.UUID,
+) -> Optional[Graph]:
+    """Return the first deployed graph for this tenant, or None."""
+    result = await db.execute(
+        select(Graph).where(
+            Graph.tenant_id == tenant_id,
+            Graph.is_deployed == True,
+        ).order_by(Graph.created_at.desc()).limit(1)
+    )
+    return result.scalar_one_or_none()
+
+
 async def deploy_graph_version(
     db: AsyncSession,
     graph: Graph,

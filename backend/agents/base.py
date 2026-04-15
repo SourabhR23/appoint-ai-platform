@@ -67,6 +67,7 @@ class BaseAgent(ABC):
         """
         logger.error(
             "agent_error",
+            exc_info=exc,
             extra={
                 "agent": self.name,
                 "tenant_id": state.get("tenant_id"),

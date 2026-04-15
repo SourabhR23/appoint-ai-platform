@@ -27,6 +27,7 @@ from backend.repositories.appointment_repo import (
     check_slot_conflict,
     create_appointment,
 )
+from backend.repositories.service_repo import find_service_by_name, list_services
 from backend.repositories.staff_repo import get_staff_by_id
 from backend.schemas.appointment import AppointmentCreate
 
@@ -36,14 +37,14 @@ EXTRACTION_PROMPT = """You are an appointment booking assistant.
 Extract booking details from the conversation.
 
 Return ONLY a JSON object with these fields (use null for missing fields):
-{
+{{
   "patient_name": "string or null",
   "patient_phone": "string or null (digits only, include country code)",
   "patient_email": "string or null",
   "service_name": "string or null",
   "requested_datetime": "ISO 8601 string or null (e.g. 2026-04-10T14:30:00+05:30)",
   "missing_fields": ["list of fields still needed from user"]
-}
+}}
 
 Today's date context: {today}
 Tenant timezone: {timezone}
@@ -118,20 +119,67 @@ class BookingAgent(BaseAgent):
 
             requested_dt = datetime.fromisoformat(requested_dt_str).astimezone(timezone.utc)
 
-            # Use staff_id from state (set by slot_checker or directly)
-            staff_id_str = state.get("staff_id")
+            # ── Step 3b: Resolve service_id from extracted name or state ──────
             service_id_str = state.get("service_id")
             service_duration = int(state.get("service_duration_minutes", 30))
+            service_staff_ids: list = []
 
-            if not staff_id_str or not service_id_str:
-                return {
-                    **state,
-                    "response": "Please select a service and staff member to proceed.",
-                    "next_node": "__end__",
-                }
+            if not service_id_str:
+                # Try to match by extracted service_name from LLM
+                extracted_service_name = extracted.get("service_name")
+                if extracted_service_name:
+                    matched_service = await find_service_by_name(
+                        db, tenant_id, extracted_service_name
+                    )
+                else:
+                    matched_service = None
+
+                if not matched_service:
+                    # List available services to help the user
+                    available = await list_services(db, tenant_id)
+                    names = ", ".join(s.name for s in available[:8])
+                    return {
+                        **state,
+                        "response": (
+                            f"I couldn't find that service. "
+                            f"Available services: {names}. Which would you like?"
+                        ),
+                        "next_node": "__end__",
+                    }
+
+                service_id_str = str(matched_service.id)
+                service_duration = matched_service.duration_minutes
+                service_staff_ids = matched_service.staff_ids or []
+            else:
+                # Service already resolved — try to get staff_ids from DB
+                from backend.repositories.service_repo import get_service_by_id
+                svc = await get_service_by_id(db, tenant_id, uuid.UUID(service_id_str))
+                if svc:
+                    service_duration = svc.duration_minutes
+                    service_staff_ids = svc.staff_ids or []
+
+            service_id = uuid.UUID(service_id_str)
+
+            # ── Step 3c: Resolve staff_id ─────────────────────────────────────
+            staff_id_str = state.get("staff_id")
+            if not staff_id_str:
+                if service_staff_ids:
+                    # Pick first assigned staff; in future: pick least-busy
+                    staff_id_str = service_staff_ids[0]
+                else:
+                    # No staff assigned to this service — list all active staff
+                    from backend.repositories.staff_repo import list_staff
+                    all_staff = await list_staff(db, tenant_id)
+                    active = [s for s in all_staff if s.is_active]
+                    if not active:
+                        return {
+                            **state,
+                            "response": "No staff members are available right now. Please contact us directly.",
+                            "next_node": "__end__",
+                        }
+                    staff_id_str = str(active[0].id)
 
             staff_id = uuid.UUID(staff_id_str)
-            service_id = uuid.UUID(service_id_str)
             slot_end = requested_dt + timedelta(minutes=service_duration + buffer_minutes)
 
             # ── Step 4: Check slot availability ───────────────────────────────

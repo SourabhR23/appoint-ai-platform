@@ -15,40 +15,34 @@ Caching strategy:
 - On cache miss: compile from graph_versions.definition and cache.
 """
 
-import json
 import logging
-import pickle
 import uuid
-from datetime import datetime, timezone
+from typing import Any
 
-import redis.asyncio as aioredis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.core.config import settings
 from backend.graph.builder import compile_graph
 from backend.graph.state import GraphState
 
 logger = logging.getLogger(__name__)
 
-# Redis client for compiled graph caching
-_redis_client: aioredis.Redis | None = None
-
-
-def get_redis() -> aioredis.Redis:
-    global _redis_client
-    if _redis_client is None:
-        _redis_client = aioredis.from_url(settings.REDIS_URL, decode_responses=False)
-    return _redis_client
+# In-memory graph cache: {cache_key: compiled_graph}
+# Compiled LangGraph objects contain LLM client instances that cannot be
+# safely pickled to Redis. An in-memory dict is safe and fast enough for
+# development and single-process production deployments.
+# Cache is invalidated automatically when the version number changes.
+_graph_cache: dict[str, Any] = {}
 
 
 async def _get_or_compile_graph(
     db: AsyncSession,
     tenant_id: uuid.UUID,
     graph_id: uuid.UUID,
-) -> tuple[any, int]:
+) -> tuple[Any, int]:
     """
     Returns (compiled_graph, version).
-    Tries Redis cache first, compiles from DB on miss.
+    Uses in-memory cache keyed by (graph_id, version).
+    Recompiles from DB on cache miss (version change or server restart).
     """
     from backend.repositories.graph_repo import get_graph_by_id, get_graph_version
 
@@ -57,13 +51,10 @@ async def _get_or_compile_graph(
         raise ValueError(f"No deployed graph found for graph_id={graph_id}")
 
     cache_key = f"graph:{graph_id}:v{graph.active_version}"
-    redis = get_redis()
 
-    # Try cache
-    cached = await redis.get(cache_key)
-    if cached:
+    if cache_key in _graph_cache:
         logger.debug("graph_cache_hit", extra={"cache_key": cache_key})
-        return pickle.loads(cached), graph.active_version
+        return _graph_cache[cache_key], graph.active_version
 
     # Cache miss — compile from DB
     version_row = await get_graph_version(
@@ -75,11 +66,9 @@ async def _get_or_compile_graph(
         )
 
     compiled = compile_graph(version_row.definition, str(tenant_id))
+    _graph_cache[cache_key] = compiled
 
-    # Cache for 1 hour
-    await redis.setex(cache_key, 3600, pickle.dumps(compiled))
     logger.info("graph_compiled_and_cached", extra={"cache_key": cache_key})
-
     return compiled, graph.active_version
 
 
@@ -101,7 +90,9 @@ async def execute_graph(
 
     compiled_graph, version = await _get_or_compile_graph(db, tenant_id, graph_id)
 
-    # Build initial state — injecting DB + tenant context
+    # Build initial state — only serialisable GraphState fields here.
+    # db (AsyncSession) and tenant_config are passed via LangGraph's config
+    # "configurable" dict so they survive state merges across nodes.
     initial_state: GraphState = {
         "tenant_id": str(tenant_id),
         "session_id": session_id,
@@ -116,10 +107,13 @@ async def execute_graph(
         "error": "",
         "escalated": False,
         "notification_status": "",
-        # Injected runtime context (not stored in DB)
-        "db": db,
-        "tenant_config": tenant_config,
     }
+
+    # Set request-scoped context vars so every node can read db + tenant_config
+    # without them being in GraphState (LangGraph strips non-schema keys).
+    from backend.graph.context import current_db, current_tenant_config
+    token_db = current_db.set(db)
+    token_cfg = current_tenant_config.set(tenant_config)
 
     try:
         final_state = await compiled_graph.ainvoke(initial_state)
@@ -134,6 +128,10 @@ async def execute_graph(
             },
         )
         raise
+    finally:
+        # Always reset context vars after execution
+        current_db.reset(token_db)
+        current_tenant_config.reset(token_cfg)
 
     # ── Record billing event (async, non-blocking) ─────────────────────────────
     # In Phase 1 / trial: just log. Stripe integration is Phase 2.

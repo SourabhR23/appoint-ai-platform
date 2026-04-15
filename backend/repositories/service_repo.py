@@ -45,6 +45,27 @@ async def get_service_by_id(
     return result.scalar_one_or_none()
 
 
+async def find_service_by_name(
+    db: AsyncSession,
+    tenant_id: uuid.UUID,
+    name_fragment: str,
+) -> Optional[Service]:
+    """
+    Case-insensitive partial match on service name.
+    Used by booking agent to resolve service_name → service_id from user input.
+    Returns the best single match (first result ordered by name).
+    """
+    from sqlalchemy import func as sa_func
+    result = await db.execute(
+        select(Service).where(
+            Service.tenant_id == tenant_id,
+            Service.is_active == True,
+            Service.name.ilike(f"%{name_fragment}%"),
+        ).order_by(Service.name.asc()).limit(1)
+    )
+    return result.scalar_one_or_none()
+
+
 async def create_service(
     db: AsyncSession,
     tenant_id: uuid.UUID,
