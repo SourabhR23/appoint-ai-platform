@@ -54,7 +54,7 @@ Customer sends WhatsApp message
 ### For the Platform (Architecture)
 - **Multi-tenancy** — every tenant's data is isolated via `tenant_id` scoping on every table and Supabase RLS
 - **Agent Graphs** — visual node-edge configuration compiled into LangGraph `StateGraph` at runtime; versioned and rollback-capable
-- **Graph Caching** — compiled graphs cached in Redis; no recompilation per message
+- **Graph Caching** — compiled graphs cached in-process (module-level dict); no recompilation per message
 - **Async throughout** — FastAPI + SQLAlchemy async + asyncpg — no blocking I/O
 - **Worker queue** — Celery + Redis for async notifications, reminders, and retry logic
 
@@ -71,7 +71,7 @@ Customer sends WhatsApp message
 | **Cache / Queue** | Redis via Upstash (TLS) | Graph cache, Celery broker, rate limiting |
 | **ORM** | SQLAlchemy 2.0 async | Async DB access, Alembic migrations |
 | **Auth** | Supabase Auth + JWT | Multi-tenant JWT with `tenant_id` claims |
-| **Notifications** | Twilio + SendGrid | WhatsApp, SMS, email delivery |
+| **Notifications** | Twilio + Gmail SMTP | WhatsApp, SMS, email delivery |
 | **Billing** | Stripe | Subscription plans + usage-based metering |
 | **Frontend** | Vanilla JS + Tailwind CSS | Single-file SPA served by FastAPI |
 | **Workers** | Celery + Redis | Reminders, async notification delivery |
@@ -249,7 +249,7 @@ Each tenant deploys an **agent graph** — a directed state machine where nodes 
 
 ### Graph Versioning
 
-Every graph change creates a new version row. Deploy any previous version in one click — full rollback support. Compiled graphs are cached in Redis to avoid recompilation per message.
+Every graph change creates a new version row. Deploy any previous version in one click — full rollback support. Compiled graphs are cached in-process per worker to avoid recompilation per message.
 
 ---
 

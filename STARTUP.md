@@ -207,6 +207,7 @@ alembic upgrade head
 | **Phase 1** | Core backend (auth, appointments, staff, graphs, chat), LangGraph agent pipeline, tenant portal frontend (login, dashboard, appointments, AI chat, agent setup with template activation) | ✅ Complete |
 | **Phase 2** | Services CRUD + rate card UI, staff add/edit/deactivate + working hours editor, slot availability API + calendar page with slot checker | ✅ Complete |
 | **Phase 3** | Channel Setup UI (SMS/WhatsApp/Email configure per tenant), Twilio inbound webhooks, Gmail SMTP email, `channel_configs` table | ✅ Complete |
+| **Bug fixes** | 6 agent pipeline bugs resolved: contextvars db injection, graph cache, conditional edge routing, EXTRACTION_PROMPT KeyError, service name lookup, exc_info logging | ✅ Complete |
 | **Phase 4** | Public website, onboarding wizard (business type → agent template → services → hours → payment), login credential flashcard | 🔲 Not started |
 | **Phase 5** | Super admin portal (LLM usage, billing, tenant health), LLM token logging, Stripe metered billing | 🔲 Not started |
 
