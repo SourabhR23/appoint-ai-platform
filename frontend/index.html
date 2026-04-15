@@ -1657,62 +1657,77 @@
   const GRAPH_TEMPLATES = {
     full: {
       name: "Full Booking Suite",
-      description: "Complete 7-agent pipeline: booking, reschedule, cancel, status, notifications, and escalation.",
+      description: "Complete pipeline: booking, reschedule, cancel, status, info catalogue, slots, notifications, and escalation.",
       definition: {
         nodes: [
-          { id: "intent_classifier", type: "intent_classifier", config: { is_entry: true }, position: { x: 0, y: 0 } },
-          { id: "booking_agent", type: "booking_agent", config: {}, position: { x: 200, y: -120 } },
-          { id: "reschedule_agent", type: "reschedule_agent", config: {}, position: { x: 200, y: -40 } },
-          { id: "cancellation_agent", type: "cancellation_agent", config: {}, position: { x: 200, y: 40 } },
-          { id: "status_checker", type: "status_checker", config: {}, position: { x: 200, y: 120 } },
-          { id: "escalation_agent", type: "escalation_agent", config: {}, position: { x: 200, y: 200 } },
-          { id: "notification_agent", type: "notification_agent", config: {}, position: { x: 400, y: 0 } }
+          { id: "intent_classifier",  type: "intent_classifier",  config: { is_entry: true }, position: { x: 0,   y: 0    } },
+          { id: "booking_agent",      type: "booking_agent",      config: {},                 position: { x: 250, y: -200 } },
+          { id: "reschedule_agent",   type: "reschedule_agent",   config: {},                 position: { x: 250, y: -120 } },
+          { id: "cancellation_agent", type: "cancellation_agent", config: {},                 position: { x: 250, y: -40  } },
+          { id: "status_checker",     type: "status_checker",     config: {},                 position: { x: 250, y: 40   } },
+          { id: "info_agent",         type: "info_agent",         config: {},                 position: { x: 250, y: 120  } },
+          { id: "escalation_agent",   type: "escalation_agent",   config: {},                 position: { x: 250, y: 200  } },
+          { id: "notification_agent", type: "notification_agent", config: {},                 position: { x: 500, y: -80  } }
         ],
         edges: [
-          { id: "e1", source: "intent_classifier", target: "booking_agent", condition: "book" },
-          { id: "e2", source: "intent_classifier", target: "reschedule_agent", condition: "reschedule" },
-          { id: "e3", source: "intent_classifier", target: "cancellation_agent", condition: "cancel" },
-          { id: "e4", source: "intent_classifier", target: "status_checker", condition: "check" },
-          { id: "e5", source: "intent_classifier", target: "escalation_agent", condition: "other" },
-          { id: "e6", source: "booking_agent", target: "notification_agent", condition: null },
-          { id: "e7", source: "reschedule_agent", target: "notification_agent", condition: null },
-          { id: "e8", source: "cancellation_agent", target: "notification_agent", condition: null },
-          { id: "e9", source: "notification_agent", target: "__end__", condition: null },
-          { id: "e10", source: "status_checker", target: "__end__", condition: null },
-          { id: "e11", source: "escalation_agent", target: "__end__", condition: null }
+          { id: "e1",  source: "intent_classifier",  target: "booking_agent",      condition: "book"          },
+          { id: "e2",  source: "intent_classifier",  target: "reschedule_agent",   condition: "reschedule"    },
+          { id: "e3",  source: "intent_classifier",  target: "cancellation_agent", condition: "cancel"        },
+          { id: "e4",  source: "intent_classifier",  target: "status_checker",     condition: "check"         },
+          { id: "e5",  source: "intent_classifier",  target: "info_agent",         condition: "list_services" },
+          { id: "e6",  source: "intent_classifier",  target: "info_agent",         condition: "list_staff"    },
+          { id: "e7",  source: "intent_classifier",  target: "info_agent",         condition: "check_slots"   },
+          { id: "e8",  source: "intent_classifier",  target: "escalation_agent",   condition: "other"         },
+          { id: "e9",  source: "booking_agent",      target: "notification_agent", condition: null            },
+          { id: "e10", source: "reschedule_agent",   target: "notification_agent", condition: null            },
+          { id: "e11", source: "cancellation_agent", target: "notification_agent", condition: null            },
+          { id: "e12", source: "notification_agent", target: "__end__",            condition: null            },
+          { id: "e13", source: "status_checker",     target: "__end__",            condition: null            },
+          { id: "e14", source: "info_agent",         target: "__end__",            condition: null            },
+          { id: "e15", source: "escalation_agent",   target: "__end__",            condition: null            }
         ]
       }
     },
     booking: {
       name: "Booking Only",
-      description: "Minimal 3-agent setup: intent classification, booking, and notifications.",
+      description: "Booking + service/staff/slot info: intent classification, info catalogue, booking, and notifications.",
       definition: {
         nodes: [
-          { id: "intent_classifier", type: "intent_classifier", config: { is_entry: true }, position: { x: 0, y: 0 } },
-          { id: "booking_agent", type: "booking_agent", config: {}, position: { x: 200, y: 0 } },
-          { id: "notification_agent", type: "notification_agent", config: {}, position: { x: 400, y: 0 } }
+          { id: "intent_classifier",  type: "intent_classifier",  config: { is_entry: true }, position: { x: 0,   y: 0   } },
+          { id: "info_agent",         type: "info_agent",         config: {},                 position: { x: 250, y: -80 } },
+          { id: "booking_agent",      type: "booking_agent",      config: {},                 position: { x: 250, y: 0   } },
+          { id: "notification_agent", type: "notification_agent", config: {},                 position: { x: 500, y: 0   } }
         ],
         edges: [
-          { id: "e1", source: "intent_classifier", target: "booking_agent", condition: "book" },
-          { id: "e2", source: "booking_agent", target: "notification_agent", condition: null },
-          { id: "e3", source: "notification_agent", target: "__end__", condition: null }
+          { id: "e1", source: "intent_classifier",  target: "info_agent",         condition: "list_services" },
+          { id: "e2", source: "intent_classifier",  target: "info_agent",         condition: "list_staff"    },
+          { id: "e3", source: "intent_classifier",  target: "info_agent",         condition: "check_slots"   },
+          { id: "e4", source: "intent_classifier",  target: "booking_agent",      condition: "book"          },
+          { id: "e5", source: "info_agent",         target: "__end__",            condition: null            },
+          { id: "e6", source: "booking_agent",      target: "notification_agent", condition: null            },
+          { id: "e7", source: "notification_agent", target: "__end__",            condition: null            }
         ]
       }
     },
     info: {
       name: "Info & Status",
-      description: "Read-only agent: lets users check appointment status and escalate.",
+      description: "Read-only: service catalogue, staff roster, slot availability, appointment status.",
       definition: {
         nodes: [
-          { id: "intent_classifier", type: "intent_classifier", config: { is_entry: true }, position: { x: 0, y: 0 } },
-          { id: "status_checker", type: "status_checker", config: {}, position: { x: 200, y: -40 } },
-          { id: "escalation_agent", type: "escalation_agent", config: {}, position: { x: 200, y: 60 } }
+          { id: "intent_classifier", type: "intent_classifier", config: { is_entry: true }, position: { x: 0,   y: 0   } },
+          { id: "info_agent",        type: "info_agent",        config: {},                 position: { x: 250, y: -80 } },
+          { id: "status_checker",    type: "status_checker",    config: {},                 position: { x: 250, y: 20  } },
+          { id: "escalation_agent",  type: "escalation_agent",  config: {},                 position: { x: 250, y: 120 } }
         ],
         edges: [
-          { id: "e1", source: "intent_classifier", target: "status_checker", condition: "check" },
-          { id: "e2", source: "intent_classifier", target: "escalation_agent", condition: "other" },
-          { id: "e3", source: "status_checker", target: "__end__", condition: null },
-          { id: "e4", source: "escalation_agent", target: "__end__", condition: null }
+          { id: "e1", source: "intent_classifier", target: "info_agent",        condition: "list_services" },
+          { id: "e2", source: "intent_classifier", target: "info_agent",        condition: "list_staff"    },
+          { id: "e3", source: "intent_classifier", target: "info_agent",        condition: "check_slots"   },
+          { id: "e4", source: "intent_classifier", target: "status_checker",    condition: "check"         },
+          { id: "e5", source: "intent_classifier", target: "escalation_agent",  condition: "other"         },
+          { id: "e6", source: "info_agent",        target: "__end__",           condition: null            },
+          { id: "e7", source: "status_checker",    target: "__end__",           condition: null            },
+          { id: "e8", source: "escalation_agent",  target: "__end__",           condition: null            }
         ]
       }
     }

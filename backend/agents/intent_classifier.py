@@ -28,7 +28,11 @@ from backend.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-VALID_INTENTS = {"book", "reschedule", "cancel", "check", "other"}
+VALID_INTENTS = {
+    "book", "reschedule", "cancel", "check",
+    "list_services", "list_staff", "check_slots",
+    "other",
+}
 
 SYSTEM_PROMPT = """You are an intent classifier for an appointment booking system.
 
@@ -37,7 +41,10 @@ Classify the user's message into exactly ONE of these intents:
 - reschedule: user wants to change an existing appointment time
 - cancel: user wants to cancel an appointment
 - check: user wants to know their appointment details or status
-- other: anything else (greetings, questions, unclear requests)
+- list_services: user asks what services/treatments/prices are available
+- list_staff: user asks who the staff/doctors/stylists are
+- check_slots: user asks about available time slots or appointment availability for a date
+- other: anything else (greetings, unclear requests)
 
 Respond ONLY with a valid JSON object like this:
 {"intent": "book", "confidence": 0.95, "reasoning": "user asked to book"}

@@ -23,6 +23,7 @@ from backend.agents.cancellation_agent import CancellationAgent
 from backend.agents.status_checker import StatusCheckerAgent
 from backend.agents.notification_agent import NotificationAgent
 from backend.agents.escalation_agent import EscalationAgent
+from backend.agents.info_agent import InfoAgent
 
 
 # Registry: agent type key → agent class
@@ -35,6 +36,7 @@ AGENT_REGISTRY: dict[str, Type[BaseAgent]] = {
     StatusCheckerAgent.name: StatusCheckerAgent,
     NotificationAgent.name: NotificationAgent,
     EscalationAgent.name: EscalationAgent,
+    InfoAgent.name: InfoAgent,
 }
 
 # Metadata for frontend sidebar — cost_weight, display_name, icon, category
@@ -87,6 +89,13 @@ AGENT_METADATA: list[dict] = [
         "cost_weight": EscalationAgent.cost_weight,
         "category": "output",
         "description": "Hands off to a human agent when automation cannot resolve the request.",
+    },
+    {
+        "type": InfoAgent.name,
+        "display_name": InfoAgent.display_name,
+        "cost_weight": InfoAgent.cost_weight,
+        "category": "information",
+        "description": "Lists services, staff, and available slots — zero LLM tokens for catalogue queries.",
     },
 ]
 
