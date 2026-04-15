@@ -24,8 +24,12 @@ google_credentials.json
 *password*.txt
 
 
-# ── Docs folder (excluded for now — add back when ready to publish) ───────────
-docs/
+# ── Docs folder — track markdown files, ignore screenshots and binaries ───────
+docs/error/
+docs/**/*.png
+docs/**/*.jpg
+docs/**/*.jpeg
+docs/**/*.gif
 
 
 # ── Course / personal notes (not part of the product codebase) ───────────────
